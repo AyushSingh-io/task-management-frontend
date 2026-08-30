@@ -1,13 +1,48 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import authService from "./services/authService.js"
+import { useDispatch } from 'react-redux';
+import { login, logout } from "./store/authSlice.js"
+import { Header, Footer } from "./components/index.js"
+import { Outlet } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+
+
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [loader, setLoader] = useState(true);
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
 
-  return (
+  useEffect(() => {
+    authService.getCurrentUser()
+      .then((userData) => {
+        if (userData) {
+          dispatch(login(userData));
+        }
+        else {
+          dispatch(logout())
+        }
+      })
+      .catch((error) => {
+        console.log(error)
+        navigate("/login")
+      })
+      .finally(() => {
+        setLoader(false)
+      })
+
+  }, [dispatch])
+
+  return loader ? <h1>Loading...</h1> :
     <>
-      <h1> Hello world !</h1>
+
+      <Header />
+      <main>
+        <Outlet />
+      </main>
+      <Footer />
+
     </>
-  )
 }
 
 export default App
