@@ -6,6 +6,7 @@ import Select from './Select'
 import Login from "./Login";
 import Signup from "./Signup";
 import Protected from "./AuthLayout"
+import ProjectForm from './ProjectForm/ProjectForm'
 
 
 export {
@@ -16,5 +17,6 @@ export {
     Select,
     Login,
     Signup,
-    Protected
+    Protected,
+    ProjectForm
 }

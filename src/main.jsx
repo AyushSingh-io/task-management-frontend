@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.jsx'
+import "./app.css"
 import { Provider } from 'react-redux'
 import store from './store/store.js'
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
@@ -13,7 +14,9 @@ import {
   Projects,
   Signup,
   TaskDetails,
-  DashBoard
+  DashBoard,
+  AddProject,
+  EditProject
 } from "./pages/index.js"
 
 
@@ -65,7 +68,7 @@ const router = createBrowserRouter([
         )
       },
       {
-        path: "/project-details",
+        path: "/projects/:projectId",
         element: (
           <Protected authentication >
             <ProjectDetails />
@@ -85,6 +88,22 @@ const router = createBrowserRouter([
         element: (
           <Protected authentication >
             <TaskDetails />
+          </Protected>
+        )
+      },
+      {
+        path: "/project/create",
+        element: (
+          <Protected authentication >
+            <AddProject />
+          </Protected>
+        )
+      },
+      {
+        path: "/projects/:projectId/edit",
+        element: (
+          <Protected authentication >
+            <EditProject />
           </Protected>
         )
       },

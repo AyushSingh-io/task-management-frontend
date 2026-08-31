@@ -6,6 +6,8 @@ import Projects from "./Projects"
 import Signup from "./Signup"
 import TaskDetails from "./TaskDetails"
 import DashBoard from "./Dashboard"
+import AddProject from "./AddProject"
+import EditProject from "./EditProject"
 
 export  {
     Login,
@@ -15,5 +17,7 @@ export  {
     Projects,
     Signup,
     TaskDetails,
-    DashBoard
+    DashBoard,
+    AddProject,
+    EditProject
 }
