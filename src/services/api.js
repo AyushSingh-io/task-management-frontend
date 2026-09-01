@@ -18,7 +18,7 @@ const api = async (endpoint, options = {}) => {
        const data = contentType?.includes("application/json") ? await response.json() : null;
 
        if(!response.ok){
-        console.log("response is :" , response)
+        console.log("response is :" , response, data)
         throw new Error(data?.message || `Request failed with status ${response.status}`)
        }
 
@@ -26,7 +26,6 @@ const api = async (endpoint, options = {}) => {
 
     } catch (error) {
         console.log(`Api Endpoint Error : ${endpoint} `, error);
-        console.log("AFTER ERROR || DATA" , options.method , options.body)
         throw error
     }
 

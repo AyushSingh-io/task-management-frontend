@@ -5,7 +5,7 @@ import projectService from "../services/projectService.js";
 
 function EditProject() {
     const { projectId } = useParams();
-    console.log('IN EDITPROJECT PAGE : PROJECT ID ' , projectId)
+
     const [project, setProject] = useState({});
 
     useEffect(() => {
