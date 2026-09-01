@@ -15,7 +15,7 @@ function Protected({ children, authentication = false }) {
         }
 
         if (!authentication && authStatus) {
-            navigate('/dashboard');
+            navigate('/');
         }
 
         setLoader(false);

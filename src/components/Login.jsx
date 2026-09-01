@@ -27,7 +27,7 @@ function Login() {
 
             if (res) {
                 dispatch(login(res));
-                navigate("/dashboard");
+                navigate("/")
             }
 
         } catch (error) {

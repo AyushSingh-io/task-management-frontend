@@ -13,7 +13,7 @@ function Header() {
     const navItems = [
         {
             name: "Dashboard",
-            link: "/dashboard",
+            link: "/",
             active: authStatus
         },
         {
