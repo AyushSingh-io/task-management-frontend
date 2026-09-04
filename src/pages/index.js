@@ -8,6 +8,8 @@ import TaskDetails from "./TaskDetails"
 import DashBoard from "./Dashboard"
 import AddProject from "./AddProject"
 import EditProject from "./EditProject"
+import AddTask from "./AddTask"
+import EditTask from "./EditTask"
 
 export  {
     Login,
@@ -19,5 +21,7 @@ export  {
     TaskDetails,
     DashBoard,
     AddProject,
-    EditProject
+    EditProject,
+    AddTask,
+    EditTask
 }

@@ -212,7 +212,7 @@ function ProjectDetails() {
                                 <div
                                     key={task._id}
                                     onClick={() =>
-                                        navigate(`/tasks/${task._id}`)
+                                        navigate(`/projects/${projectId}/tasks/${task._id}`)
                                     }
                                     className="cursor-pointer rounded-lg border border-amber-100 bg-amber-50 p-4 transition hover:-translate-y-0.5 hover:border-amber-200 hover:shadow-sm"
                                 >

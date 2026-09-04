@@ -16,7 +16,9 @@ import {
   TaskDetails,
   DashBoard,
   AddProject,
-  EditProject
+  EditProject,
+  AddTask,
+  EditTask
 } from "./pages/index.js"
 
 
@@ -84,7 +86,7 @@ const router = createBrowserRouter([
         )
       },
       {
-        path: "/task-details",
+        path: "/projects/:projectId/tasks/:taskId",
         element: (
           <Protected authentication >
             <TaskDetails />
@@ -107,6 +109,25 @@ const router = createBrowserRouter([
           </Protected>
         )
       },
+
+      {
+        path: "/projects/:projectId/tasks/create",
+        element: (
+          <Protected authentication >
+            <AddTask/>
+          </Protected>
+        )
+      },
+
+      {
+        path: "/projects/:projectId/tasks/:taskId/edit",
+        element: (
+          <Protected authentication >
+            <EditTask/>
+          </Protected>
+        )
+      },
+     
 
     ]
   }

@@ -7,6 +7,7 @@ import Login from "./Login";
 import Signup from "./Signup";
 import Protected from "./AuthLayout"
 import ProjectForm from './ProjectForm/ProjectForm'
+import TaskForm from "./TaskForm/TaskForm";
 
 
 export {
@@ -18,5 +19,6 @@ export {
     Login,
     Signup,
     Protected,
-    ProjectForm
+    ProjectForm,
+    TaskForm
 }
