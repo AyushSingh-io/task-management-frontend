@@ -26,7 +26,8 @@ function Login() {
             const res = await authService.login(data);
 
             if (res) {
-                dispatch(login(res));
+                console.log(res , res.data)
+                dispatch(login(res.data));
                 navigate("/")
             }
 

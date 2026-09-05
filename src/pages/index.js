@@ -10,6 +10,9 @@ import AddProject from "./AddProject"
 import EditProject from "./EditProject"
 import AddTask from "./AddTask"
 import EditTask from "./EditTask"
+import ChangePassword from "./ChangePassword"
+import EditProfile from "./EditProfile"
+
 
 export  {
     Login,
@@ -23,5 +26,7 @@ export  {
     AddProject,
     EditProject,
     AddTask,
-    EditTask
+    EditTask,
+    EditProfile,
+    ChangePassword
 }

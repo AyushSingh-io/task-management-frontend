@@ -5,7 +5,7 @@ import "./app.css"
 import { Provider } from 'react-redux'
 import store from './store/store.js'
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
-import {Protected} from './components/index.js'
+import { Protected } from './components/index.js'
 import {
   Login,
   MyTasks,
@@ -18,7 +18,9 @@ import {
   AddProject,
   EditProject,
   AddTask,
-  EditTask
+  EditTask,
+  ChangePassword,
+  EditProfile
 } from "./pages/index.js"
 
 
@@ -29,7 +31,7 @@ const router = createBrowserRouter([
     element: <App />,
     children: [
       {
-        index : true,
+        index: true,
         element: (
           <Protected authentication>
             <DashBoard />
@@ -61,6 +63,24 @@ const router = createBrowserRouter([
           </Protected>
         )
       },
+      {
+        path: "/profile/edit",
+        element: (
+          <Protected authentication>
+            <EditProfile />
+          </Protected>
+        )
+      },
+      {
+        path: "/profile/change-password",
+        element: (
+          <Protected authentication>
+            <ChangePassword />
+          </Protected>
+        )
+      },
+
+
       {
         path: "/projects",
         element: (
@@ -114,7 +134,7 @@ const router = createBrowserRouter([
         path: "/projects/:projectId/tasks/create",
         element: (
           <Protected authentication >
-            <AddTask/>
+            <AddTask />
           </Protected>
         )
       },
@@ -123,11 +143,11 @@ const router = createBrowserRouter([
         path: "/projects/:projectId/tasks/:taskId/edit",
         element: (
           <Protected authentication >
-            <EditTask/>
+            <EditTask />
           </Protected>
         )
       },
-     
+
 
     ]
   }

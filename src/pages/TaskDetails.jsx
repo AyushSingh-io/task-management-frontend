@@ -6,18 +6,19 @@ import commentService from '../services/commentService.js'
 
 function TaskDetails() {
     const { projectId, taskId } = useParams();
-    const [ task, setTask ] = useState();
-    const [ comments, setComments ] = useState([]);
+    const [task, setTask] = useState();
+    const [comments, setComments] = useState([]);
     const navigate = useNavigate();
+    const [inputComment, setInputComment] = useState("");
 
     const dateConverter = (d) => {
         const date = new Date(d);
         const formattedDate = date.toLocaleDateString('en-GB', {
-            day : "2-digit",
-            month : "short",
-            year : "numeric"
+            day: "2-digit",
+            month: "short",
+            year: "numeric"
         })
-        console.log(task , comments)
+        console.log(task, comments)
         return formattedDate;
     }
 
@@ -27,9 +28,18 @@ function TaskDetails() {
 
     const deleteHandler = async () => {
         const res = await taskService.deleteTaskById(taskId);
-        if(res){
+        if (res) {
             navigate(`/projects/${projectId}`);
         }
+    }
+
+    const addCommentHandler = async () => {
+        const res = await commentService.addCommentToTask(taskId, { content: inputComment });
+        if (res) {
+            setComments((prev) => [res.data ,...prev]);
+            setInputComment("");
+        }
+
     }
 
     useEffect(() => {
@@ -47,7 +57,7 @@ function TaskDetails() {
                     setComments(commentRes.data)
                 }
 
-                console.log(task,comments)
+                console.log(task, comments)
 
             } catch (error) {
                 console.log("TASK DETAILS ERROR,", error);
@@ -249,6 +259,8 @@ function TaskDetails() {
                             <div className="shrink-0 border-b border-emerald-100 bg-white p-5">
 
                                 <textarea
+                                    value={inputComment}
+                                    onChange={(e) => setInputComment(e.target.value)}
                                     rows="3"
                                     placeholder="Write a comment..."
                                     className="w-full resize-none rounded-lg border border-slate-300 px-4 py-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
@@ -257,7 +269,7 @@ function TaskDetails() {
                                 <div className="mt-3 flex justify-end">
 
                                     <button
-                                    
+                                        onClick={addCommentHandler}
                                         className="rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
                                     >
                                         Add Comment
@@ -294,7 +306,7 @@ function TaskDetails() {
                                                             </div>
 
                                                             <p className="shrink-0 text-xs text-slate-400">
-                                                                {comment?.createdAt}
+                                                                {comment.createdAt ? new Date(comment.createdAt).toISOString().split('T')[0] : null}
                                                             </p>
 
                                                         </div>
