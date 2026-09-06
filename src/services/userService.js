@@ -17,6 +17,11 @@ const userService = {
         body : data    //FormData type
     }),
 
+    getUserInfo : (data) => api("/users/get-user-info" , {
+        method : "POST",
+        body : JSON.stringify(data)
+    })
+
 }
 
 export default userService;

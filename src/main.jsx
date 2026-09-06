@@ -20,7 +20,8 @@ import {
   AddTask,
   EditTask,
   ChangePassword,
-  EditProfile
+  EditProfile,
+  ProjectMembers
 } from "./pages/index.js"
 
 
@@ -144,6 +145,14 @@ const router = createBrowserRouter([
         element: (
           <Protected authentication >
             <EditTask />
+          </Protected>
+        )
+      },
+      {
+        path: "/projects/:projectId/members",
+        element: (
+          <Protected authentication >
+            <ProjectMembers />
           </Protected>
         )
       },

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import taskService from "../services/taskService.js";
 import commentService from '../services/commentService.js'
+import projectMemberService from '../services/projectMemberService.js'
 
 
 function TaskDetails() {
@@ -10,6 +11,8 @@ function TaskDetails() {
     const [comments, setComments] = useState([]);
     const navigate = useNavigate();
     const [inputComment, setInputComment] = useState("");
+    const [showAssignMembers, setShowAssignMembers] = useState(false);
+    const [projectMembers, setProjectMembers] = useState([])
 
     const dateConverter = (d) => {
         const date = new Date(d);
@@ -27,27 +30,57 @@ function TaskDetails() {
     }
 
     const deleteHandler = async () => {
-        const res = await taskService.deleteTaskById(taskId);
-        if (res) {
-            navigate(`/projects/${projectId}`);
+        try {
+            const res = await taskService.deleteTaskById(taskId);
+            if (res) {
+                navigate(`/projects/${projectId}`);
+            }
+        } catch (error) {
+            console.log('DELETE TASK ERROR ', error)
         }
     }
 
     const addCommentHandler = async () => {
-        const res = await commentService.addCommentToTask(taskId, { content: inputComment });
-        if (res) {
-            setComments((prev) => [res.data ,...prev]);
-            setInputComment("");
+        if (!inputComment.trim()) {
+            return;
+        }
+        try {
+            const res = await commentService.addCommentToTask(taskId, { content: inputComment });
+            if (res) {
+                setComments((prev) => [res.data, ...prev]);
+                setInputComment("");
+            }
+        } catch (error) {
+            console.log("ADD COMMENT ERROR", error)
         }
 
+    }
+
+    const assignTaskHandler = async (member) => {
+        if (task.assignedTo === member.member._id) {
+            setShowAssignMembers(false);
+            console.log("Already assigned member")
+            return;
+        }
+
+        try {
+            const res = await taskService.assignTask(taskId, { assignedTo: member.member._id });
+            if (res) {
+                setTask(res.data)
+                setShowAssignMembers(false)
+            }
+        } catch (error) {
+            console.log("ASSIGN TASK ERROR", error)
+        }
     }
 
     useEffect(() => {
         const fetchTaskDetails = async () => {
             try {
-                const [taskRes, commentRes] = await Promise.all([
+                const [taskRes, commentRes, projectMembersRes] = await Promise.all([
                     taskService.getTaskById(taskId),
-                    commentService.getAllComments(taskId)
+                    commentService.getAllComments(taskId),
+                    projectMemberService.getAllProjectMembers(projectId),
                 ]);
 
                 if (taskRes) {
@@ -56,8 +89,9 @@ function TaskDetails() {
                 if (commentRes) {
                     setComments(commentRes.data)
                 }
-
-                console.log(task, comments)
+                if (projectMembersRes) {
+                    setProjectMembers(projectMembersRes.data)
+                }
 
             } catch (error) {
                 console.log("TASK DETAILS ERROR,", error);
@@ -67,7 +101,7 @@ function TaskDetails() {
 
         fetchTaskDetails();
 
-    }, [taskId])
+    }, [taskId, projectId])
 
     return (
         <div className="min-h-screen bg-slate-100 p-4 md:p-6">
@@ -100,6 +134,13 @@ function TaskDetails() {
 
                                     {/* Actions */}
                                     <div className="flex gap-2">
+
+                                        <button
+                                            onClick={() => setShowAssignMembers(true)}
+                                            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+                                        >
+                                            {task?.assignedTo ? "Change Assignee" : "Assign Task"}
+                                        </button>
 
                                         <button
                                             onClick={updateHandler}
@@ -187,7 +228,7 @@ function TaskDetails() {
 
                                         <div>
                                             <p className="font-semibold text-slate-800">
-                                                {task?.assignedTo || "assignedToUserName"}
+                                                {task?.assignedTo || "Not Assigned"}
                                             </p>
 
                                         </div>
@@ -329,6 +370,104 @@ function TaskDetails() {
                         </div>
 
                     </div>
+
+                    {/*============== PROJECT MEMBER LIST ======= */}
+                    {showAssignMembers && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+
+                            <div className="w-full max-w-lg rounded-xl bg-white shadow-xl">
+
+                                {/* Header */}
+                                <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+
+                                    <div>
+                                        <h2 className="text-xl font-semibold text-indigo-700">
+                                            Assign Task
+                                        </h2>
+
+                                        <p className="mt-1 text-sm text-slate-500">
+                                            Select a project member to assign this task.
+                                        </p>
+                                    </div>
+
+                                    <button
+                                        onClick={() => setShowAssignMembers(false)}
+                                        className="rounded-md px-3 py-1 text-xl text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                                    >
+                                        ×
+                                    </button>
+
+                                </div>
+
+
+                                {/* Members */}
+                                <div className="max-h-[400px] space-y-3 overflow-y-auto p-6">
+
+                                    {/* Example member */}
+                                    {
+                                        projectMembers.map((member) => (
+
+                                            <div
+                                                key={member._id}
+                                                className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-4 transition hover:border-indigo-200 hover:bg-indigo-50">
+
+                                                <div className="flex items-center gap-3">
+
+                                                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-indigo-100 font-semibold text-indigo-700">
+                                                        {member.member.avatar ?
+
+                                                            <img
+                                                                src={member.member.avatar}
+                                                                alt="avatar"
+                                                                className="h-full w-full object-cover"
+                                                            />
+                                                            :
+                                                            member.member.username?.charAt(0).toUpperCase()
+                                                        }
+                                                    </div>
+
+                                                    <div>
+                                                        <p className="font-semibold text-slate-800">
+                                                            {member.member.username}
+                                                        </p>
+
+                                                        <p className="text-sm text-slate-500">
+                                                            {member.member.role}
+                                                        </p>
+                                                    </div>
+
+                                                </div>
+
+                                                <button
+                                                    onClick={() => assignTaskHandler(member)}
+                                                    className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700"
+                                                >
+                                                    Assign
+                                                </button>
+
+                                            </div>
+                                        ))
+                                    }
+
+                                </div>
+
+
+                                {/* Footer */}
+                                <div className="flex justify-end border-t border-slate-200 px-6 py-4">
+
+                                    <button
+                                        onClick={() => setShowAssignMembers(false)}
+                                        className="rounded-lg bg-slate-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-600"
+                                    >
+                                        Cancel
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+                    )}
 
                 </div>
 
