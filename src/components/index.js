@@ -8,6 +8,7 @@ import Signup from "./Signup";
 import Protected from "./AuthLayout"
 import ProjectForm from './ProjectForm/ProjectForm'
 import TaskForm from "./TaskForm/TaskForm";
+import TaskCard from "./TaskCard";
 
 
 export {
@@ -20,5 +21,6 @@ export {
     Signup,
     Protected,
     ProjectForm,
-    TaskForm
+    TaskForm,
+    TaskCard
 }

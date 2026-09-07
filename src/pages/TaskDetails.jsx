@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import taskService from "../services/taskService.js";
 import commentService from '../services/commentService.js'
 import projectMemberService from '../services/projectMemberService.js'
+import { Select, Button } from "../components/index.js"
 
 
 function TaskDetails() {
@@ -14,6 +15,10 @@ function TaskDetails() {
     const [showAssignMembers, setShowAssignMembers] = useState(false);
     const [projectMembers, setProjectMembers] = useState([])
 
+    const [selectedStatus, setSelectedStatus] = useState("");
+    const [updatingStatus, setUpdatingStatus] = useState(false);
+
+
     const dateConverter = (d) => {
         const date = new Date(d);
         const formattedDate = date.toLocaleDateString('en-GB', {
@@ -21,7 +26,6 @@ function TaskDetails() {
             month: "short",
             year: "numeric"
         })
-        console.log(task, comments)
         return formattedDate;
     }
 
@@ -47,6 +51,7 @@ function TaskDetails() {
         try {
             const res = await commentService.addCommentToTask(taskId, { content: inputComment });
             if (res) {
+                console.log(res)
                 setComments((prev) => [res.data, ...prev]);
                 setInputComment("");
             }
@@ -74,6 +79,21 @@ function TaskDetails() {
         }
     }
 
+    const updateStatusHandler = async () => {
+        setUpdatingStatus(true)
+        try {
+            const res = await taskService.updateTaskStatus(taskId, { status: selectedStatus });
+            console.log("responsee is ", res)
+            if (res) {
+                setTask((prev) => ({ ...prev, status: res.data.status }))
+                setUpdatingStatus(false)
+            }
+
+        } catch (error) {
+            console.log('UPDATE STATUS ERROR', error)
+        }
+    }
+
     useEffect(() => {
         const fetchTaskDetails = async () => {
             try {
@@ -85,6 +105,7 @@ function TaskDetails() {
 
                 if (taskRes) {
                     setTask(taskRes.data);
+                    setSelectedStatus(taskRes.data.status)
                 }
                 if (commentRes) {
                     setComments(commentRes.data)
@@ -135,26 +156,26 @@ function TaskDetails() {
                                     {/* Actions */}
                                     <div className="flex gap-2">
 
-                                        <button
+                                        <Button
                                             onClick={() => setShowAssignMembers(true)}
                                             className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
                                         >
-                                            {task?.assignedTo ? "Change Assignee" : "Assign Task"}
-                                        </button>
+                                            {task?.assignedTo?.username ? "Change Assignee" : "Assign Task"}
+                                        </Button>
 
-                                        <button
+                                        <Button
                                             onClick={updateHandler}
                                             className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
                                         >
                                             Update
-                                        </button>
+                                        </Button>
 
-                                        <button
+                                        <Button
                                             onClick={deleteHandler}
                                             className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700"
                                         >
                                             Delete
-                                        </button>
+                                        </Button>
 
                                     </div>
 
@@ -190,9 +211,28 @@ function TaskDetails() {
                                             Status
                                         </h2>
 
-                                        <span className="mt-3 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-700">
-                                            {task?.status}
-                                        </span>
+                                        <div className="mt-3 flex flex-col gap-3">
+
+                                            <Select
+                                                value={selectedStatus}
+                                                onChange={(e) => setSelectedStatus(e.target.value)}
+                                                options={["TODO", "IN_PROGRESS", "DONE"]}
+                                                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                                            >
+                                            </Select>
+
+                                            <Button
+                                                onClick={updateStatusHandler}
+                                                disabled={
+                                                    updatingStatus ||
+                                                    selectedStatus === task?.status
+                                                }
+                                                className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                            >
+                                                {updatingStatus ? "Updating..." : "Update Status"}
+                                            </Button>
+
+                                        </div>
 
                                     </div>
 
@@ -223,12 +263,23 @@ function TaskDetails() {
                                     <div className="mt-3 flex items-center gap-3">
 
                                         <div className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-100 font-semibold text-emerald-700">
-                                            AS
+                                            {
+                                                task?.assignedTo?.avatar ?
+                                                    <img
+                                                        src={task.assignedTo.avatar}
+                                                        alt={task.assignedTo.username}
+                                                        className="h-full w-full object-cover"
+                                                    />
+                                                    :
+                                                    task?.assignedTo?.username
+                                                        ?.charAt(0)
+                                                        .toUpperCase() || "?"
+                                            }
                                         </div>
 
                                         <div>
                                             <p className="font-semibold text-slate-800">
-                                                {task?.assignedTo || "Not Assigned"}
+                                                {task?.assignedTo?.username || task?.assignedTo || "Not Assigned"}
                                             </p>
 
                                         </div>
@@ -309,12 +360,12 @@ function TaskDetails() {
 
                                 <div className="mt-3 flex justify-end">
 
-                                    <button
+                                    <Button
                                         onClick={addCommentHandler}
                                         className="rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
                                     >
                                         Add Comment
-                                    </button>
+                                    </Button>
 
                                 </div>
 
@@ -333,7 +384,14 @@ function TaskDetails() {
                                                 <div className="flex items-start gap-3">
 
                                                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-sm font-semibold text-emerald-700">
-                                                        RS
+                                                        {comment?.owner.avatar ?
+                                                            <img src={comment.owner.avatar} alt="avatar"
+                                                                className="h-full w-full object-cover" />
+                                                            :
+                                                            comment.owner.username
+                                                                ?.charAt(0)
+                                                                .toUpperCase()
+                                                        }
                                                     </div>
 
                                                     <div className="min-w-0 flex-1">
@@ -342,7 +400,7 @@ function TaskDetails() {
 
                                                             <div>
                                                                 <p className="font-semibold text-slate-800">
-                                                                    {comment?.owner}
+                                                                    {comment?.owner.username}
                                                                 </p>
                                                             </div>
 
@@ -390,12 +448,12 @@ function TaskDetails() {
                                         </p>
                                     </div>
 
-                                    <button
+                                    <Button
                                         onClick={() => setShowAssignMembers(false)}
                                         className="rounded-md px-3 py-1 text-xl text-slate-400 hover:bg-slate-100 hover:text-slate-700"
                                     >
                                         ×
-                                    </button>
+                                    </Button>
 
                                 </div>
 
@@ -438,12 +496,12 @@ function TaskDetails() {
 
                                                 </div>
 
-                                                <button
+                                                <Button
                                                     onClick={() => assignTaskHandler(member)}
                                                     className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700"
                                                 >
                                                     Assign
-                                                </button>
+                                                </Button>
 
                                             </div>
                                         ))
@@ -455,12 +513,12 @@ function TaskDetails() {
                                 {/* Footer */}
                                 <div className="flex justify-end border-t border-slate-200 px-6 py-4">
 
-                                    <button
+                                    <Button
                                         onClick={() => setShowAssignMembers(false)}
                                         className="rounded-lg bg-slate-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-600"
                                     >
                                         Cancel
-                                    </button>
+                                    </Button>
 
                                 </div>
 

@@ -43,6 +43,31 @@ function ProjectCard({ project }) {
                     {project.description || "No description available"}
                 </p>
 
+                {/* Owner */}
+                <div className="mb-4 flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-indigo-100 font-semibold text-indigo-700">
+                        {project.owner?.avatar ? (
+                            <img
+                                src={project.owner.avatar}
+                                alt={project.owner.username}
+                                className="h-full w-full object-cover"
+                            />
+                        ) : (
+                            project.owner?.username?.charAt(0).toUpperCase()
+                        )}
+                    </div>
+
+                    <div>
+                        <p className="text-xs text-slate-400">
+                            Project Owner
+                        </p>
+
+                        <p className="text-sm font-semibold text-slate-700">
+                            {project.owner?.username || "Unknown"}
+                        </p>
+                    </div>
+                </div>
+
                 {/* Created Date */}
                 <div className="border-t border-slate-100 pt-3">
                     <p className="text-xs text-slate-400">

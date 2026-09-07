@@ -4,12 +4,14 @@ import projectService from "../services/projectService";
 import { setProjects } from "../store/projectSlice";
 import ProjectCard from "../components/ProjectCard";
 import { useNavigate } from "react-router-dom";
+import { Button } from "../components";
 
 function Projects() {
     const dispatch = useDispatch();
     const userProjects = useSelector((state) => state.project.projects);
 
     const navigate = useNavigate();
+    console.log("proejcts" , userProjects)
 
     useEffect(() => {
         const fetchProjects = async () => {
@@ -45,14 +47,14 @@ function Projects() {
                 </div>
 
                 {/* Create Project Button */}
-                <button
+                <Button
                     onClick={() => navigate("/project/create")}
                     type="button"
                     className="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 font-medium text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                 >
                     <span className="text-lg leading-none">+</span>
                     Create Project
-                </button>
+                </Button>
 
             </div>
 

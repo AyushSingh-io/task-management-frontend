@@ -93,7 +93,7 @@ function EditProfile() {
                                 Change Avatar
                             </Button>
 
-                            <input
+                            <Input 
                                 ref={avatarInputRef}
                                 onChange={handleAvatarChange}
                                 type="file"

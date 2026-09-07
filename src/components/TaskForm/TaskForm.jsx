@@ -10,7 +10,6 @@ function TaskForm({ task }) {
         defaultValues: {
             name: task?.name || "",
             description: task?.description || "",
-            status: task?.status || "TODO",
             priority: task?.priority || "MEDIUM",
             dueDate: task?.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : "",
             completedAt: task?.completedAt ? new Date(task.completedAt).toISOString().split("T")[0] : ""
@@ -46,7 +45,6 @@ function TaskForm({ task }) {
         reset({
             name: task?.name || "",
             description: task?.description || "",
-            status: task?.status || "TODO",
             priority: task?.priority || "MEDIUM",
             dueDate: task?.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : "",
             completedAt: task?.completedAt ? new Date(task.completedAt).toISOString().split('T')[0] : ""
@@ -125,16 +123,6 @@ function TaskForm({ task }) {
                         />
                     </div>
 
-                </div>
-
-
-                {/* Status */}
-                <div className="rounded-lg border border-emerald-100 bg-white p-4">
-                    <Select
-                        label="Status"
-                        options={["TODO", "IN_PROGRESS", "DONE"]}
-                        {...register("status")}
-                    />
                 </div>
 
 

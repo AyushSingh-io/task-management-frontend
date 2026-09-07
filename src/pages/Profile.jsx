@@ -1,6 +1,7 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { Button } from "../components";
 
 function Profile() {
     const userData = useSelector((state) => state.auth.userData);
@@ -107,19 +108,19 @@ function Profile() {
                         {/* Actions */}
                         <div className="mt-8 flex flex-col gap-3 border-t border-slate-200 pt-6 sm:flex-row">
 
-                            <button
+                            <Button
                                 onClick={() => navigate('/profile/edit')}
                                 className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
                             >
                                 Update Profile
-                            </button>
+                            </Button>
 
-                            <button
+                            <Button
                                 onClick={() => navigate('/profile/change-password')}
                                 className="rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                             >
                                 Change Password
-                            </button>
+                            </Button>
 
                         </div>
                     </div>

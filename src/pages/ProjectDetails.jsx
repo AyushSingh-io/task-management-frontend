@@ -71,95 +71,216 @@ function ProjectDetails() {
 
 
             {/* Project Information */}
-            <div className="mb-6 rounded-xl bg-white p-5 shadow-md">
+
+            {/* Project Information */}
+            <div className="mb-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
 
                 {/* Project Header */}
-                <div className="mb-4 flex flex-col gap-4 border-b border-indigo-100 pb-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="border-b border-slate-200 bg-gradient-to-r from-indigo-50 to-white px-6 py-6">
 
-                    <div>
-                        <h2 className="text-xl font-semibold text-indigo-700">
-                            Project Information
-                        </h2>
+                    <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
 
-                        <p className="text-sm text-slate-500">
-                            Details about this project
-                        </p>
-                    </div>
+                        {/* Project Title */}
+                        <div className="min-w-0">
+
+                            <p className="mb-1 text-sm font-medium text-indigo-600">
+                                Project Overview
+                            </p>
+
+                            <div className="flex flex-wrap items-center gap-3">
+
+                                <h2 className="text-2xl font-bold text-slate-900">
+                                    {project.name || "Project"}
+                                </h2>
+
+                                <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
+                                    {project.status || "Unknown"}
+                                </span>
+
+                            </div>
+
+                            <p className="mt-2 text-sm text-slate-500">
+                                View project information and manage its tasks.
+                            </p>
+
+                        </div>
 
 
-                    {/* Project Actions */}
-                    <div className="flex gap-2">
+                        {/* Project Actions */}
+                        <div className="flex flex-wrap gap-2">
 
-                        <Button
-                            onClick={() =>
-                                navigate(`/projects/${projectId}/edit`)
-                            }
-                            className="bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-700 rounded-sm"
-                        >
-                            Update
-                        </Button>
+                            <Button
+                                onClick={() =>
+                                    navigate(`/projects/${projectId}/edit`)
+                                }
+                                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+                            >
+                                Update
+                            </Button>
 
-                        <Button
-                            onClick={() =>
-                                navigate(`/projects/${projectId}/members`)
-                            }
-                            className="bg-slate-600 px-4 py-2 text-sm text-white hover:bg-slate-700 rounded-sm"
-                        >
-                            Show Members
-                        </Button>
+                            <Button
+                                onClick={() =>
+                                    navigate(`/projects/${projectId}/members`)
+                                }
+                                className="rounded-lg bg-slate-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
+                            >
+                                Show Members
+                            </Button>
 
-                        <Button
-                            onClick={deleteProjectHandler}
-                            className="bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700 rounded-sm"
-                        >
-                            Delete
-                        </Button>
+                            <Button
+                                onClick={deleteProjectHandler}
+                                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700"
+                            >
+                                Delete
+                            </Button>
+
+                        </div>
 
                     </div>
 
                 </div>
 
 
-                {/* Project Details */}
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {/* Project Content */}
+                <div className="p-6">
 
-                    {/* Name */}
-                    <div className="rounded-lg border border-indigo-100 bg-indigo-50 p-4">
+                    <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
 
-                        <p className="text-sm font-medium text-indigo-500">
-                            Project Name
-                        </p>
+                        {/* Project Owner */}
+                        <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
 
-                        <p className="mt-1 text-lg font-semibold text-indigo-900">
-                            {project.name}
-                        </p>
+                            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                                Project Owner
+                            </p>
 
-                    </div>
+                            <div className="mt-4 flex items-center gap-4">
+
+                                <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-indigo-100 text-lg font-bold text-indigo-700">
+
+                                    {project.owner?.avatar ? (
+                                        <img
+                                            src={project.owner.avatar}
+                                            alt={project.owner.username}
+                                            className="h-full w-full object-cover"
+                                        />
+                                    ) : (
+                                        project.owner?.username
+                                            ?.charAt(0)
+                                            .toUpperCase() || "?"
+                                    )}
+
+                                </div>
+
+                                <div className="min-w-0">
+
+                                    <p className="truncate font-semibold text-slate-800">
+                                        {project.owner?.username || "Unknown"}
+                                    </p>
+
+                                    <p className="mt-1 text-xs text-slate-500">
+                                        Project Owner
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                        </div>
 
 
-                    {/* Status */}
-                    <div className="rounded-lg border border-indigo-100 bg-indigo-50 p-4">
+                        {/* Project Status */}
+                        <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
 
-                        <p className="text-sm font-medium text-indigo-500">
-                            Status
-                        </p>
+                            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                                Status
+                            </p>
 
-                        <p className="mt-1 font-semibold text-indigo-900">
-                            {project.status}
-                        </p>
+                            <div className="mt-4 flex items-center gap-3">
+
+                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
+                                    ●
+                                </div>
+
+                                <div>
+
+                                    <p className="font-semibold text-slate-800">
+                                        {project.status || "Unknown"}
+                                    </p>
+
+                                    <p className="mt-1 text-xs text-slate-500">
+                                        Current project status
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        {/* Created Date */}
+                        <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
+
+                            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                                Created
+                            </p>
+
+                            <div className="mt-4 flex items-center gap-3">
+
+                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
+                                    📅
+                                </div>
+
+                                <div>
+
+                                    <p className="font-semibold text-slate-800">
+                                        {project.createdAt
+                                            ? new Date(project.createdAt).toLocaleDateString(
+                                                "en-GB",
+                                                {
+                                                    day: "2-digit",
+                                                    month: "short",
+                                                    year: "numeric"
+                                                }
+                                            )
+                                            : "--"
+                                        }
+                                    </p>
+
+                                    <p className="mt-1 text-xs text-slate-500">
+                                        Project creation date
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                        </div>
 
                     </div>
 
 
                     {/* Description */}
-                    <div className="rounded-lg border border-indigo-100 bg-indigo-50 p-4 md:col-span-2">
+                    <div className="mt-5 rounded-xl border border-slate-200 bg-white p-5">
 
-                        <p className="text-sm font-medium text-indigo-500">
-                            Description
-                        </p>
+                        <div className="flex items-center justify-between">
 
-                        <p className="mt-1 text-slate-700">
-                            {project.description}
+                            <div>
+
+                                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                                    Description
+                                </p>
+
+                                <p className="mt-1 text-sm text-slate-500">
+                                    About this project
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                        <p className="mt-4 max-w-4xl text-sm leading-7 text-slate-700">
+                            {project.description || "No description available for this project."}
                         </p>
 
                     </div>
@@ -167,6 +288,8 @@ function ProjectDetails() {
                 </div>
 
             </div>
+
+
 
 
             {/* Tasks */}
