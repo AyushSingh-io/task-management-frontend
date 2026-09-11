@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import { Input, Button, Select } from "../index.js"
@@ -6,6 +6,8 @@ import taskService from "../../services/taskService.js"
 
 
 function TaskForm({ task }) {
+    const [isCreating, setIsCreating] = useState(false)
+
     const { register, handleSubmit, reset, setError, formState: { errors } } = useForm({
         defaultValues: {
             name: task?.name || "",
@@ -20,11 +22,12 @@ function TaskForm({ task }) {
 
 
     const submitHandler = async (data) => {
+        setIsCreating(true)
         try {
             if (task) {
                 const res = await taskService.updateTaskById(taskId, data);
                 if (res) {
-                    navigate(`/projects/${projectId}`)
+                    navigate(`/projects/${projectId}/tasks/${res.data._id}`)
                 }
             }
             else {
@@ -39,6 +42,7 @@ function TaskForm({ task }) {
                 message: error.message
             })
         }
+        setIsCreating(false)
     }
 
     useEffect(() => {
@@ -142,9 +146,11 @@ function TaskForm({ task }) {
             <div className="flex justify-end border-t border-emerald-100 bg-white px-6 py-4">
                 <Button
                     type="submit"
-                    className="min-w-36"
+                    className={`min-w-36 rounded-md  px-5 py-2.5 font-medium text-white  ${isCreating ? "bg-emerald-900" : "bg-emerald-600 transition hover:bg-emerald-700"}`}
                 >
-                    {task ? "Update Task" : "Create Task"}
+                    {
+                        isCreating ? (task ? "Updating..." : "Creating...") :
+                            (task ? "Update Task" : "Create Task")}
                 </Button>
             </div>
 

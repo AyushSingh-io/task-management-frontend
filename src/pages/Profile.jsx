@@ -5,7 +5,6 @@ import { Button } from "../components";
 
 function Profile() {
     const userData = useSelector((state) => state.auth.userData);
-    console.log(userData)
     const dipatch = useDispatch();
     const navigate = useNavigate();
 

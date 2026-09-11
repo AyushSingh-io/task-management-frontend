@@ -8,8 +8,10 @@ function ChangePassword() {
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const navigate = useNavigate();
+    const [isChangingPassword, setIsChangingPassword] = useState(false)
 
     const ChangePasswordHandler = async () => {
+        setIsChangingPassword(true)
         try {
             if (newPassword !== confirmPassword) return true;
             const res = await userService.changePassword({
@@ -25,7 +27,7 @@ function ChangePassword() {
             console.log("CHANGE PASSWORD ERROR", error)
         }
 
-
+        setIsChangingPassword(false)
     }
 
     return (
@@ -92,11 +94,12 @@ function ChangePassword() {
                         <div className="mt-8 flex flex-col gap-3 border-t border-slate-200 pt-6 sm:flex-row">
 
                             <Button
+                                disabled={isChangingPassword}
                                 onClick={ChangePasswordHandler}
                                 type="button"
-                                className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
+                                className={`rounded-lg  px-5 py-2.5 text-sm font-semibold text-white  ${isChangingPassword ? "bg-blue-900" : "bg-blue-600 transition hover:bg-blue-700"}`}
                             >
-                                Update Password
+                                {isChangingPassword ? "Updating..." : "Update Password"}
                             </Button>
 
                             <Button

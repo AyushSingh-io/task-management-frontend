@@ -9,6 +9,8 @@ import Protected from "./AuthLayout"
 import ProjectForm from './ProjectForm/ProjectForm'
 import TaskForm from "./TaskForm/TaskForm";
 import TaskCard from "./TaskCard";
+import Loading from "./Loading";
+import ErrorMessage from "./ErrorMessage";
 
 
 export {
@@ -22,5 +24,7 @@ export {
     Protected,
     ProjectForm,
     TaskForm,
-    TaskCard
+    TaskCard,
+    Loading,
+    ErrorMessage
 }

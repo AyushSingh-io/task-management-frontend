@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Input, Button, Select } from "../index.js"
 import { useNavigate } from "react-router-dom";
@@ -7,6 +7,7 @@ import projectService from "../../services/projectService.js";
 
 
 function ProjectForm({ project }) {
+    const [isCreating, setIsCreating] = useState(false)
 
     const { register, handleSubmit, reset, setError, formState: { errors } } = useForm({
         defaultValues: {
@@ -22,6 +23,7 @@ function ProjectForm({ project }) {
     const submitHandler = async (data) => {
         //convert data to formData:
         try {
+            setIsCreating(true)
             const formData = new FormData();
 
             if (data?.coverImage[0]) {
@@ -33,24 +35,31 @@ function ProjectForm({ project }) {
 
 
             if (project) { //update project
-                const updatedProject = await projectService.updateProject(project._id, formData);
-                if (updatedProject) {
-                    navigate("/projects");
+                const updatedProjectRes = await projectService.updateProject(project._id, formData);
+                if (updatedProjectRes) {
+
+                    navigate(`/projects/${updatedProjectRes.data._id}`);
+                    setIsCreating(false)
                 }
             }
             else {
-                const newProject = await projectService.createProject(formData);
-                if (newProject) {
+                const newProjectRes = await projectService.createProject(formData);
+                if (newProjectRes) {
+
                     navigate("/projects");
+                    setIsCreating(false)
                 }
             }
 
         } catch (error) {
             console.log("ProjectForm error : ", error);
+
             setError("root.serverError", {
                 type: "server",
                 message: error.message
             })
+
+            setIsCreating(false)
         }
     }
 
@@ -145,10 +154,18 @@ function ProjectForm({ project }) {
             {/* Footer / Action */}
             <div className="flex justify-end border-t border-indigo-100 bg-white px-6 py-4">
                 <Button
+                    disabled ={isCreating}
                     type="submit"
-                    className="min-w-36 "
+                    className={`min-w-36 rounded-md px-5 py-2.5 font-medium text-white transition
+        ${isCreating
+                            ? "bg-indigo-800 cursor-not-allowed"
+                            : "bg-indigo-600 hover:bg-indigo-700"
+                        }`}
                 >
-                    {project ? "Update Project" : "Create Project"}
+                    {
+                        isCreating ? (project ? "Updating" : "Creating") :
+                            (project ? "Update Project" : "Create Project")
+                    }
                 </Button>
             </div>
 
