@@ -4,6 +4,8 @@ import taskService from "../services/taskService.js";
 import commentService from '../services/commentService.js'
 import projectMemberService from '../services/projectMemberService.js'
 import { Select, Button, Loading, ErrorMessage } from "../components/index.js"
+import { toast } from "sonner";
+import { useSelector } from "react-redux";
 
 
 function TaskDetails() {
@@ -22,6 +24,9 @@ function TaskDetails() {
     const [isAddingComment, setIsAddingComment] = useState(false);
     const [error, setError] = useState(null)
 
+    const currUser = useSelector((state) => state.auth.userData);
+    const currUserRoleInProject = projectMembers.find((obj) => obj.member._id === currUser._id)?.role;
+    console.log(task)
 
     const dateConverter = (d) => {
         const date = new Date(d);
@@ -43,9 +48,11 @@ function TaskDetails() {
             const res = await taskService.deleteTaskById(taskId);
             if (res) {
                 navigate(`/projects/${projectId}`);
+                toast.success("Task deleted successfully")
             }
         } catch (error) {
             console.log('DELETE TASK ERROR ', error)
+            toast.error(error.message)
         }
         setIsDeleting(false)
     }
@@ -62,9 +69,11 @@ function TaskDetails() {
                 console.log(res)
                 setComments((prev) => [res.data, ...prev]);
                 setInputComment("");
+                toast.success("Comment added successfully")
             }
         } catch (error) {
             console.log("ADD COMMENT ERROR", error)
+            toast.error(error.message)
         }
         setIsAddingComment(false)
 
@@ -85,9 +94,11 @@ function TaskDetails() {
                 console.log(res, res.data)
                 setTask(res.data)
                 setShowAssignMembers(false)
+                toast.success("Task assigned successfully")
             }
         } catch (error) {
             console.log("ASSIGN TASK ERROR", error)
+            toast.error(error.message)
         }
     }
 
@@ -99,10 +110,12 @@ function TaskDetails() {
             if (res) {
                 setTask((prev) => ({ ...prev, status: res.data.status }))
                 setUpdatingStatus(false)
+                toast.success(`Update task status to ${selectedStatus}`)
             }
 
         } catch (error) {
             console.log('UPDATE STATUS ERROR', error)
+            toast.error(error.message)
         }
     }
 
@@ -177,31 +190,34 @@ function TaskDetails() {
 
 
                                         {/* Actions */}
-                                        <div className="flex gap-2">
+                                        {
+                                            ['OWNER', 'ADMIN'].includes(currUserRoleInProject)
+                                            &&
+                                            <div className="flex gap-2">
 
-                                            <Button
-                                                onClick={() => setShowAssignMembers(true)}
-                                                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
-                                            >
-                                                {task?.assignedTo ? "Change Assignee" : "Assign Task"}
-                                            </Button>
+                                                <Button
+                                                    onClick={() => setShowAssignMembers(true)}
+                                                    className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+                                                >
+                                                    {task?.assignedTo ? "Change Assignee" : "Assign Task"}
+                                                </Button>
 
-                                            <Button
-                                                onClick={updateHandler}
-                                                className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
-                                            >
-                                                Update
-                                            </Button>
+                                                <Button
+                                                    onClick={updateHandler}
+                                                    className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
+                                                >
+                                                    Update
+                                                </Button>
 
-                                            <Button
-                                                disabled={isDeleting}
-                                                onClick={deleteHandler}
-                                                className={`rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm  ${isDeleting ? "bg-red-900" : "bg-red-600 transition hover:bg-red-700"}`}
-                                            >
-                                                {isDeleting ? "Deleting..." : "Delete"}
-                                            </Button>
+                                                <Button
+                                                    disabled={isDeleting}
+                                                    onClick={deleteHandler}
+                                                    className={`rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm  ${isDeleting ? "bg-red-900" : "bg-red-600 transition hover:bg-red-700"}`}
+                                                >
+                                                    {isDeleting ? "Deleting..." : "Delete"}
+                                                </Button>
 
-                                        </div>
+                                            </div>}
 
                                     </div>
 
@@ -238,28 +254,34 @@ function TaskDetails() {
                                                         Status
                                                     </h2>
 
-                                                    <div className="mt-3 flex flex-col gap-3">
+                                                    {(['OWNER', 'ADMIN'].includes(currUserRoleInProject) || currUser._id === task?.assignedTo?._id)
+                                                        ?
+                                                        <div className="mt-3 flex flex-col gap-3">
 
-                                                        <Select
-                                                            value={selectedStatus}
-                                                            onChange={(e) => setSelectedStatus(e.target.value)}
-                                                            options={["TODO", "IN_PROGRESS", "DONE"]}
-                                                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-                                                        >
-                                                        </Select>
+                                                            <Select
+                                                                value={selectedStatus}
+                                                                onChange={(e) => setSelectedStatus(e.target.value)}
+                                                                options={["TODO", "IN_PROGRESS", "DONE"]}
+                                                                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                                                            />
 
-                                                        <Button
-                                                            onClick={updateStatusHandler}
-                                                            disabled={
-                                                                updatingStatus ||
-                                                                selectedStatus === task?.status
-                                                            }
-                                                            className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
-                                                        >
-                                                            {updatingStatus ? "Updating..." : "Update Status"}
-                                                        </Button>
+                                                            <Button
+                                                                onClick={updateStatusHandler}
+                                                                disabled={
+                                                                    updatingStatus ||
+                                                                    selectedStatus === task?.status
+                                                                }
+                                                                className="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                                            >
+                                                                {updatingStatus ? "Updating..." : "Update Status"}
+                                                            </Button>
 
-                                                    </div>
+                                                        </div>
+                                                        :
+                                                        <span className="mt-3 inline-flex rounded-full bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-700">
+                                                            {task?.status}
+                                                        </span>
+                                                    }
 
                                                 </div>
 
@@ -289,9 +311,11 @@ function TaskDetails() {
 
                                                 <div className="mt-3 flex items-center gap-3">
 
-                                                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-100 font-semibold text-emerald-700 overflow-hidden">
+                                                    <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-emerald-100 font-semibold text-emerald-700">
+
                                                         {
-                                                            task?.assignedTo?.avatar ?
+                                                            task?.assignedTo?.avatar
+                                                                ?
                                                                 <img
                                                                     src={task.assignedTo.avatar}
                                                                     alt={task.assignedTo.username}
@@ -302,13 +326,13 @@ function TaskDetails() {
                                                                     ?.charAt(0)
                                                                     .toUpperCase() || "?"
                                                         }
+
                                                     </div>
 
                                                     <div>
                                                         <p className="font-semibold text-slate-800">
                                                             {task?.assignedTo?.username || task?.assignedTo || "Not Assigned"}
                                                         </p>
-
                                                     </div>
 
                                                 </div>
@@ -348,7 +372,9 @@ function TaskDetails() {
 
                                             </div>
 
-                                        </div>}
+                                        </div>
+                                }
+
 
                             </div>
 

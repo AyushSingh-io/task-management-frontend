@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { Input, Button } from "./index.js";
 import { useNavigate } from "react-router-dom";
 import authService from "../services/authService.js";
+import { toast } from "sonner";
 
 
 function Signup() {
@@ -32,10 +33,12 @@ function Signup() {
 
             if (res) {
                 navigate("/login");
+                toast.success("Registered successfully")
             }
 
         } catch (error) {
             setError(error.message);
+            toast.error(error.message)
         }
     };
 

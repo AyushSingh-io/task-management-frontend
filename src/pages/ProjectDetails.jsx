@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import projectService from "../services/projectService";
 import taskService from "../services/taskService";
 import { Button, ErrorMessage, Loading } from "../components/index.js";
+import { toast } from "sonner";
 
 
 function ProjectDetails() {
@@ -15,9 +16,9 @@ function ProjectDetails() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null)
     const [isDeleting, setIsDeleting] = useState(false)
+    console.log(project)
 
     const deleteProjectHandler = async () => {
-
         try {
             setIsDeleting(true)
             const deletedProjectRes = await projectService.deleteProject(projectId);
@@ -25,10 +26,11 @@ function ProjectDetails() {
             if (deletedProjectRes) {
                 navigate("/projects");
                 setIsDeleting(false)
+                toast.success(`${deletedProjectRes.data.name} deleted successfully`)
             }
         } catch (error) {
             console.log("DELETE PROJECT ERROR ", error);
-
+            toast.error(error.message)
         }
     };
 
@@ -82,9 +84,6 @@ function ProjectDetails() {
 
                 </div>
 
-
-                Project Information
-
                 {/* Project Information */}
                 <div className="mb-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
 
@@ -124,20 +123,22 @@ function ProjectDetails() {
 
                                 <Button
                                     onClick={() =>
-                                        navigate(`/projects/${projectId}/edit`)
-                                    }
-                                    className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
-                                >
-                                    Update
-                                </Button>
-
-                                <Button
-                                    onClick={() =>
                                         navigate(`/projects/${projectId}/members`)
                                     }
                                     className="rounded-lg bg-slate-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
                                 >
                                     Show Members
+                                </Button>
+
+                                 {project.currUserRole === "OWNER" && ( 
+                                    <>
+                                    <Button
+                                    onClick={() =>
+                                        navigate(`/projects/${projectId}/edit`)
+                                    }
+                                    className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+                                >
+                                    Update
                                 </Button>
 
                                 <Button
@@ -147,6 +148,7 @@ function ProjectDetails() {
                                 >
                                     {isDeleting ? "Deleting" : "Delete"}
                                 </Button>
+                                </>)}
 
                             </div>
 
@@ -334,14 +336,14 @@ function ProjectDetails() {
                             </span>
 
 
-                            <Button
+                            {(["OWNER", "ADMIN"].includes(project.currUserRole)) &&  <Button
                                 onClick={() =>
                                     navigate(`/projects/${projectId}/tasks/create`)
                                 }
                                 className="bg-emerald-600 px-4 py-2 text-sm text-white hover:bg-emerald-700 rounded-sm"
                             >
                                 + Create Task
-                            </Button>
+                            </Button>}
 
                         </div>
 

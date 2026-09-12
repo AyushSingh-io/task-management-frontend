@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import { Input, Button, Select } from "../index.js"
 import taskService from "../../services/taskService.js"
+import { toast } from "sonner";
 
 
 function TaskForm({ task }) {
@@ -28,12 +29,14 @@ function TaskForm({ task }) {
                 const res = await taskService.updateTaskById(taskId, data);
                 if (res) {
                     navigate(`/projects/${projectId}/tasks/${res.data._id}`)
+                    toast.success("Task updated successfully")
                 }
             }
             else {
                 const res = await taskService.createTask(projectId, data)
                 if (res) {
                     navigate(`/projects/${projectId}`);
+                    toast.success("Task created successfully")
                 }
             }
         } catch (error) {
@@ -41,6 +44,7 @@ function TaskForm({ task }) {
                 type: "server",
                 message: error.message
             })
+            toast.error(error.message)
         }
         setIsCreating(false)
     }

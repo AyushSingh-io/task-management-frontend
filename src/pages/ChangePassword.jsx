@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Button, Input } from "../components/index.js";
 import { useNavigate } from "react-router-dom";
 import userService from "../services/userService.js";
+import { toast } from "sonner";
 
 function ChangePassword() {
     const [currentPassword, setCurrentPassword] = useState("");
@@ -13,7 +14,15 @@ function ChangePassword() {
     const ChangePasswordHandler = async () => {
         setIsChangingPassword(true)
         try {
-            if (newPassword !== confirmPassword) return true;
+            if (!newPassword || !currentPassword || !currentPassword) {
+                toast.info("Password cannot be empty");
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                toast.info("Confirm the password")
+                return;
+            }
             const res = await userService.changePassword({
                 oldPassword: currentPassword,
                 newPassword
@@ -21,13 +30,19 @@ function ChangePassword() {
 
             if (res) {
                 navigate("/profile")
+                toast.success("Update password successfully")
             }
 
         } catch (error) {
             console.log("CHANGE PASSWORD ERROR", error)
+            toast.error(error.message)
         }
 
-        setIsChangingPassword(false)
+        finally {
+            setIsChangingPassword(false)
+        }
+
+
     }
 
     return (

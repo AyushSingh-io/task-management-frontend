@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { Input, Button, Select } from "../index.js"
 import { useNavigate } from "react-router-dom";
 import projectService from "../../services/projectService.js";
+import { toast } from "sonner";
 
 
 
@@ -40,6 +41,7 @@ function ProjectForm({ project }) {
 
                     navigate(`/projects/${updatedProjectRes.data._id}`);
                     setIsCreating(false)
+                    toast.success("Project updated successfully");
                 }
             }
             else {
@@ -48,6 +50,7 @@ function ProjectForm({ project }) {
 
                     navigate("/projects");
                     setIsCreating(false)
+                    toast.success("Project created successfully")
                 }
             }
 
@@ -58,6 +61,8 @@ function ProjectForm({ project }) {
                 type: "server",
                 message: error.message
             })
+
+            toast.error(error.message)
 
             setIsCreating(false)
         }

@@ -4,6 +4,8 @@ import { useParams } from "react-router-dom";
 import projectMemberService from "../services/projectMemberService.js";
 import { Button, ErrorMessage, Input, Loading, Select } from "../components/index.js";
 import userService from "../services/userService.js";
+import { toast } from "sonner";
+import { useSelector } from "react-redux";
 
 
 function ProjectMembers() {
@@ -24,6 +26,12 @@ function ProjectMembers() {
     const [error, setError] = useState(null);
 
     console.log(selectedMember, members);
+    const currUser = useSelector((state) => state.auth.userData);
+    const currUserRoleInProject = members.find((obj) => obj.member._id === currUser._id)?.role
+    console.log(currUser, currUserRoleInProject)
+
+
+
 
     const addProjectMemberHandler = async () => {
         setIsAddingMember(true)
@@ -37,19 +45,23 @@ function ProjectMembers() {
                 setMembers((prev) => [r.data, ...prev])
                 setInputUsername("");
                 setShowAddMember(false);
+                toast.success("Member added successfully");
 
             }
 
         } catch (error) {
             console.log("ADD PROJECT MEMBER ERROR ", error);
+            toast.error(error.message)
 
         }
         setIsAddingMember(false)
     }
 
     const changeRoleHandler = async () => {
-        if (!newRoleOfSelectedMember || newRoleOfSelectedMember === selectedMember.role)
+        if (!newRoleOfSelectedMember || newRoleOfSelectedMember === selectedMember.role) {
+            toast.info("Member have this role already")
             return null;
+        }
 
         setIsChangingRole(true)
 
@@ -63,21 +75,32 @@ function ProjectMembers() {
 
             if (res) {
                 //update the members state:
-                setMembers((prev) => {
-                    const newPrev = prev.map((member) => member._id === res.data._id ?
-                        { ...member, role: res.data.role }
-                        :
-                        member
-                    )
-                    return newPrev;
-                })
+                // setMembers((prev) => {
+                //     const newPrev = prev.map((member) =>
+                //         member._id === res.data._id ?
+                //             { ...member, role: res.data.role }
+                //             :
+                //             member
+                //     )
+                //     return newPrev;
+                // })
+
+                fetchProjectMembers()
 
                 //update the selected member state:
                 setSelectedMember((prev) => ({ ...prev, role: res.data.role }));
+
+                if (newRoleOfSelectedMember === "OWNER") {
+                    toast.success("Ownership transfered successfully")
+                } else {
+                    toast.success("Role change successfully");
+                }
+
             }
 
         } catch (error) {
             console.log("CHANGE ROLE ERROR", error);
+            toast.error(error.message)
         }
 
         setIsChangingRole(false)
@@ -90,9 +113,12 @@ function ProjectMembers() {
             if (res) {
                 setMembers((prev) => (prev.filter((member) => member._id !== selectedMember._id)));
                 setSelectedMember(null);
+                toast.success("Member removed successfully")
             }
+
         } catch (error) {
             console.log('REMOVE MEMBER ERROR', error)
+            toast.error(error.message)
         }
         setIsRemovingMember(false)
     }
@@ -173,12 +199,12 @@ function ProjectMembers() {
                                 </span>
 
 
-                                <Button
+                                {['OWNER', 'ADMIN'].includes(currUserRoleInProject) && <Button
                                     onClick={() => setShowAddMember(true)}
                                     className="rounded-sm bg-indigo-600 hover:bg-indigo-700 px-4 py-2 text-sm text-white"
                                 >
                                     + Add Member
-                                </Button>
+                                </Button>}
 
                             </div>
 
@@ -406,12 +432,12 @@ function ProjectMembers() {
                                             {selectedMember.role}
                                         </p>
 
-                                        <Select
+                                        {['OWNER', 'ADMIN'].includes(currUserRoleInProject) && <Select
                                             value={newRoleOfSelectedMember}
                                             onChange={(e) => setNewRoleOfSelectedMember(e.target.value)}
                                             label="Change Role To :"
                                             options={['OWNER', 'ADMIN', 'MEMBER']}
-                                        />
+                                        />}
 
                                     </div>
 
@@ -421,24 +447,29 @@ function ProjectMembers() {
                                 {/* Actions */}
                                 <div className="mt-6 flex flex-col gap-3">
 
-                                    <Button
-                                        disabled={isChangingRole}
-                                        onClick={changeRoleHandler}
-                                        className={`rounded-sm  px-4 py-2 text-sm font-medium text-white transition 
+                                    {['OWNER', 'ADMIN'].includes(currUserRoleInProject) &&
+
+                                        <>
+                                        <Button
+                                            disabled={isChangingRole}
+                                            onClick={changeRoleHandler}
+                                            className={`rounded-sm  px-4 py-2 text-sm font-medium text-white transition 
                                             ${isChangingRole ? "bg-indigo-900" : "bg-indigo-600 hover:bg=indigo-700"}
                                             `}
-                                    >
-                                        {isChangingRole ? "Changing..." : "Change Role"}
-                                    </Button>
+                                        >
+                                            {isChangingRole ? "Changing..." : "Change Role"}
+                                        </Button>
 
 
-                                    <Button
-                                        disabled={isRemovingMember}
-                                        onClick={removeMemberHandler}
-                                        className={`rounded-sm px-4 py-2 text-sm font-medium text-white   ${isRemovingMember ? "bg-red-900" : "bg-red-600 transition hover:bg-red-700"}`}
-                                    >
-                                        {isRemovingMember ? "Removing..." : "Remove Member"}
-                                    </Button>
+                                            <Button
+                                                disabled={isRemovingMember}
+                                                onClick={removeMemberHandler}
+                                                className={`rounded-sm px-4 py-2 text-sm font-medium text-white   ${isRemovingMember ? "bg-red-900" : "bg-red-600 transition hover:bg-red-700"}`}
+                                            >
+                                                {isRemovingMember ? "Removing..." : "Remove Member"}
+                                            </Button>
+                                        </>
+                                        }
 
                                 </div>
 

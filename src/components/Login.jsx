@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { Input, Button } from "./index.js";
 import authService from "../services/authService.js";
 import { login } from "../store/authSlice.js";
+import { toast } from "sonner";
 
 
 function Login() {
@@ -26,9 +27,10 @@ function Login() {
             const res = await authService.login(data);
 
             if (res) {
-                console.log(res , res.data)
+                console.log(res, res.data)
                 dispatch(login(res.data));
                 navigate("/")
+                toast.success("Logged in successfully");
             }
 
         } catch (error) {

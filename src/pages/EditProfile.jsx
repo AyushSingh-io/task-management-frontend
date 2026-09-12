@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import userService from "../services/userService.js"
 import { useDispatch, useSelector } from "react-redux";
 import { login } from "../store/authSlice.js";
+import { toast } from "sonner";
 
 function EditProfile() {
     const [username, setUsername] = useState("");
@@ -27,10 +28,12 @@ function EditProfile() {
             if (res) {
                 dispatch(login(res.data))
                 navigate("/profile");
+                toast.success("User Details updated successfully")
             }
 
         } catch (error) {
             console.log("UPDATE PROFILE ERROR", error)
+            toast.error(error.message)
         }
     }
 
@@ -46,10 +49,12 @@ function EditProfile() {
                 if (res) {
                     dispatch(login(res.data))
                     navigate('/profile');
+                    toast.success("Avatar updated successfully")
                 }
             }
         } catch (error) {
             console.log('UPDATE AVATAR ERROR', error)
+            toast.error(error.message)
         }
         setIsChangingAvatar(false)
     }

@@ -24,6 +24,8 @@ import {
   ProjectMembers
 } from "./pages/index.js"
 
+import { Toaster } from 'sonner'
+
 
 
 const router = createBrowserRouter([
@@ -167,6 +169,7 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <Provider store={store}>
       <RouterProvider router={router} />
+      <Toaster/>
     </Provider>
   </StrictMode>,
 )
