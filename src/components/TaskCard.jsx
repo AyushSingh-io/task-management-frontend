@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 
 function TaskCard({ task }) {
    const navigate = useNavigate();
-   console.log(task)
 
     return (
         <div className="flex min-h-[320px] flex-col rounded-2xl border border-green-200 bg-white p-6 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-green-300 hover:shadow-md">

@@ -13,13 +13,23 @@ function MyTasks() {
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState(null)
 
+    const [status, setStatus] = useState("");
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+
+
     const fetchAssignedTasks = async () => {
         try {
             setError("");
-            const res = await taskService.getAssignedTasks();
-            console.log(res)
+            const res = await taskService.getAssignedTasks({
+                page,
+                limit: 6,
+                status: status === 'ALL' ? "" : status,
+            });
+
             if (res) {
-                dispatch(setAssignedTasks(res?.data));
+                dispatch(setAssignedTasks(res.data.assignedTasks));
+                setTotalPages(res.data.totalPages);
             }
 
         } catch (error) {
@@ -34,7 +44,7 @@ function MyTasks() {
     useEffect(() => {
         fetchAssignedTasks()
 
-    }, [])
+    }, [page, status])
 
 
 
@@ -46,7 +56,7 @@ function MyTasks() {
                 <div className="mx-auto max-w-7xl">
 
                     {/* Page Header */}
-                    <div className="mb-10">
+                    <div className="mb-6">
                         <h1 className="text-3xl font-bold tracking-tight text-green-950">
                             My Tasks
                         </h1>
@@ -80,12 +90,14 @@ function MyTasks() {
                                 </div>
 
                                 <Select
+                                    value={status}
+                                    onChange={(e) => {
+                                        setStatus(e.target.value)
+                                        setPage(1)
+                                    }}
                                     className="w-full rounded-lg border border-green-200 bg-white px-4 py-2.5 text-sm font-medium text-green-800 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100 sm:w-44"
+                                    options={['ALL', 'TODO', 'IN_PROGRESS', 'DONE']}
                                 >
-                                    <option>All Tasks</option>
-                                    <option>TODO</option>
-                                    <option>IN_PROGRESS</option>
-                                    <option>DONE</option>
                                 </Select>
                             </div>
                         </div>
@@ -96,13 +108,72 @@ function MyTasks() {
                             isLoading ?
                                 <Loading />
                                 :
-                                <div className="bg-green-50/30 p-6">
-                                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-                                        {tasks.map((task) => (
-                                            <TaskCard key={task._id} task={task} />
-                                        ))}
+                                tasks.length === 0 ?
+                                    <div className="flex min-h-[300px] flex-col items-center justify-center px-6 text-center">
+                                        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+                                            <svg
+                                                className="h-8 w-8 text-green-600"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M9 12h6m-6 4h4m4-12H7a2 2 0 00-2 2v14l4-4h8a2 2 0 002-2V6a2 2 0 00-2-2z"
+                                                />
+                                            </svg>
+                                        </div>
+
+                                        <h3 className="text-lg font-semibold text-green-950">
+                                            No tasks found
+                                        </h3>
+
+                                        <p className="mt-2 text-sm text-green-700/70">
+                                            {status
+                                                ? `You don't have any ${status.toLowerCase().replace("_", " ")} tasks.`
+                                                : "You don't have any tasks assigned to you yet."
+                                            }
+                                        </p>
                                     </div>
-                                </div>}
+                                    :
+                                    <>
+                                        <div className="bg-green-50/30 p-6">
+                                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+                                                {tasks.map((task) => (
+                                                    <TaskCard key={task._id} task={task} />
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* Pagination */}
+                                        <div className="flex items-center justify-between border-t border-green-100 bg-white px-6 py-4">
+                                            <p className="text-sm text-green-700">
+                                                Page <span className="font-semibold">{page}</span> of{" "}
+                                                <span className="font-semibold">{totalPages}</span>
+                                            </p>
+
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => setPage((prev) => prev - 1)}
+                                                    disabled={page === 1 || totalPages === 0}
+                                                    className="rounded-lg border border-green-200 px-4 py-2 text-sm font-medium text-green-700 hover:bg-green-50 disabled:cursor-not-allowed disabled:opacity-50"
+                                                >
+                                                    Previous
+                                                </button>
+
+                                                <button
+                                                    onClick={() => setPage((prev) => prev + 1)}
+                                                    disabled={page === totalPages || totalPages === 0}
+                                                    className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                                >
+                                                    Next
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </>
+                        }
                     </div>
                 </div>
             </div>

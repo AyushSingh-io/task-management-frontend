@@ -18,15 +18,15 @@ function Dashboard() {
         try {
             setError("")
             const [projects, myTasks] = await Promise.all([
-                projectService.getProjects(),
-                taskService.getAssignedTasks()
+                projectService.getProjects({}),
+                taskService.getAssignedTasks({})
             ])
 
             if (projects?.data) {
-                dispatch(setProjects(projects.data))
+                dispatch(setProjects(projects.data.projects))
             }
             if (myTasks?.data) {
-                dispatch(setAssignedTasks(myTasks.data))
+                dispatch(setAssignedTasks(myTasks.data.assignedTasks))
             }
 
         } catch (error) {

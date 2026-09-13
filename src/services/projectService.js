@@ -6,7 +6,17 @@ const projectService = {
         body: data   //FormData
     }),
 
-    getProjects: () => api("/projects"),
+    getProjects: ({page = 1 , limit = 10 , status}) => {
+        const params = new URLSearchParams();
+        params.append("page" , page);
+        params.append("limit", limit)
+
+        if(status){
+            params.append("status",status)
+        }
+
+        return api(`/projects?${params.toString()}`)
+    },
 
     getProjectById: (projectId) => api(`/projects/${projectId}`),
 

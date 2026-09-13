@@ -8,7 +8,20 @@ const taskService = {
 
     getProjectTasks: (projectId) => api(`/projects/${projectId}/tasks`),
 
-    getAssignedTasks: () => api("/tasks"),
+    getAssignedTasks: ({page = 1 , limit = 10 , status = "" }) => {
+        const params = new URLSearchParams();
+        params.append("page" ,page);
+        params.append("limit", limit);
+        
+        if(status){
+            params.append("status",status);
+        }
+
+        console.log("page limit status in taskseviceapi",page , limit , status)
+        console.log("params sgirng " , params.toString())
+
+        return api(`/tasks?${params.toString()}`)
+    },
 
     getTaskById: (taskId) => api(`/tasks/${taskId}`),
 
