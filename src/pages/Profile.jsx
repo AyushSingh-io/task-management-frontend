@@ -31,8 +31,8 @@ function Profile() {
 
                             {/* Avatar */}
                             <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-blue-200 shadow-sm">
-                                {userData.avatar ? <img
-                                    src={userData.avatar}
+                                {userData?.avatar ? <img
+                                    src={userData?.avatar}
                                     alt="Profile"
                                     className="h-full w-full object-cover"
                                 /> : <span className="text-3xl font-bold text-blue-700">
@@ -43,11 +43,11 @@ function Profile() {
                             {/* Basic Info */}
                             <div className="text-center sm:text-left">
                                 <h2 className="text-2xl font-bold text-slate-800">
-                                    {userData.username}
+                                    {userData?.username}
                                 </h2>
 
                                 <p className="mt-1 text-sm text-slate-500">
-                                    {userData.email}
+                                    {userData?.email}
                                 </p>
 
                                 <span className="mt-3 inline-block rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
@@ -71,7 +71,7 @@ function Profile() {
                                     Username
                                 </p>
                                 <p className="mt-2 font-medium text-slate-800">
-                                    {userData.username}
+                                    {userData?.username}
                                 </p>
                             </div>
 
@@ -80,7 +80,7 @@ function Profile() {
                                     Email
                                 </p>
                                 <p className="mt-2 font-medium text-slate-800">
-                                    {userData.email}
+                                    {userData?.email}
                                 </p>
                             </div>
 
@@ -89,7 +89,7 @@ function Profile() {
                                     Member Since
                                 </p>
                                 <p className="mt-2 font-medium text-slate-800">
-                                    {userData.createdAt ? new Date(userData.createdAt).toISOString().split('T')[0] : null}
+                                    {userData?.createdAt ? new Date(userData.createdAt).toISOString().split('T')[0] : null}
                                 </p>
                             </div>
 

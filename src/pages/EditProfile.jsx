@@ -15,8 +15,8 @@ function EditProfile() {
     const dispatch = useDispatch()
     const [isChangingAvatar, setIsChangingAvatar] = useState(false)
 
-    const currUsername = useSelector((state) => state.auth.userData.username)
-    const userAvatar = useSelector((state) => state.auth.userData.avatar);
+    const currUsername = useSelector((state) => state.auth.userData?.username)
+    const userAvatar = useSelector((state) => state.auth.userData?.avatar);
 
     const saveChangeHandler = async () => {
         try {

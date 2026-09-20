@@ -41,6 +41,7 @@ function ProjectDetails() {
                 projectService.getProjectById(projectId),
                 taskService.getProjectTasks(projectId)
             ]);
+            console.log(tasks)
 
             if (project) {
                 setProject(project.data);
@@ -398,9 +399,9 @@ function ProjectDetails() {
 
 
                                             <p className="font-medium text-slate-600">
-                                                Assigned:
+                                                Assigned To:
                                                 <span className="ml-1 text-slate-700">
-                                                    {task.assignedTo}
+                                                    {task.assignedTo?.username}
                                                 </span>
                                             </p>
 
