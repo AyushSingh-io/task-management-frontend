@@ -25,13 +25,155 @@ import {
 } from "./pages/index.js"
 
 import { Toaster } from 'sonner'
+import { QueryClient } from '@tanstack/react-query'
+import { QueryClientProvider } from '@tanstack/react-query'
 
+
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <App />,
+    children: [
+      {
+        index: true,
+        element: (
+          <Protected authentication>
+            <DashBoard />
+          </Protected>
+        )
+      },
+
+      {
+        path: "/login",
+        element: (
+          <Protected authentication={false}>
+            <Login />
+          </Protected>
+        )
+      },
+      {
+        path: "/signup",
+        element: (
+          <Protected authentication={false}>
+            <Signup />
+          </Protected>
+        )
+      },
+      {
+        path: "/profile",
+        element: (
+          <Protected authentication>
+            <Profile />
+          </Protected>
+        )
+      },
+      {
+        path: "/profile/edit",
+        element: (
+          <Protected authentication>
+            <EditProfile />
+          </Protected>
+        )
+      },
+      {
+        path: "/profile/change-password",
+        element: (
+          <Protected authentication>
+            <ChangePassword />
+          </Protected>
+        )
+      },
+
+
+      {
+        path: "/projects",
+        element: (
+          <Protected authentication >
+            <Projects />
+          </Protected>
+        )
+      },
+      {
+        path: "/projects/:projectId",
+        element: (
+          <Protected authentication >
+            <ProjectDetails />
+          </Protected>
+        )
+      },
+      {
+        path: "/my-tasks",
+        element: (
+          <Protected authentication >
+            <MyTasks />
+          </Protected>
+        )
+      },
+      {
+        path: "/projects/:projectId/tasks/:taskId",
+        element: (
+          <Protected authentication >
+            <TaskDetails />
+          </Protected>
+        )
+      },
+      {
+        path: "/project/create",
+        element: (
+          <Protected authentication >
+            <AddProject />
+          </Protected>
+        )
+      },
+      {
+        path: "/projects/:projectId/edit",
+        element: (
+          <Protected authentication >
+            <EditProject />
+          </Protected>
+        )
+      },
+
+      {
+        path: "/projects/:projectId/tasks/create",
+        element: (
+          <Protected authentication >
+            <AddTask />
+          </Protected>
+        )
+      },
+
+      {
+        path: "/projects/:projectId/tasks/:taskId/edit",
+        element: (
+          <Protected authentication >
+            <EditTask />
+          </Protected>
+        )
+      },
+      {
+        path: "/projects/:projectId/members",
+        element: (
+          <Protected authentication >
+            <ProjectMembers />
+          </Protected>
+        )
+      },
+
+
+    ]
+  }
+])
+
+const queryClient = new QueryClient();
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <Provider store={store}>
-        <RouterProvider router={router} />
-      <Toaster />
+      <QueryClientProvider client={queryClient}></QueryClientProvider>
+      <RouterProvider router={router} />
+      <Toaster/>
     </Provider>
   </StrictMode>,
 )
