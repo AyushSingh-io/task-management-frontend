@@ -6,55 +6,90 @@ import { Button, ErrorMessage, Input, Loading, Select } from "../components/inde
 import userService from "../services/userService.js";
 import { toast } from "sonner";
 import { useSelector } from "react-redux";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 
 function ProjectMembers() {
 
     const { projectId } = useParams();
+    const queryClient = useQueryClient();
 
     const [selectedMember, setSelectedMember] = useState(null);
-    const [members, setMembers] = useState([]);
     const [showAddMember, setShowAddMember] = useState(false);
     const [inputUsername, setInputUsername] = useState("");
     const [newRoleOfSelectedMember, setNewRoleOfSelectedMember] = useState()
 
-    const [isLoading, setIsLoading] = useState(true)
-    const [isAddingMember, setIsAddingMember] = useState(false);
-    const [isChangingRole, setIsChangingRole] = useState(false);
-    const [isRemovingMember, setIsRemovingMember] = useState(false);
+    //queries :
+    const projectMembersQuery = useQuery({
+        queryKey: ["projectMembers", projectId],
+        queryFn: () => projectMemberService.getAllProjectMembers(projectId)
+    })
 
-    const [error, setError] = useState(null);
-
-    console.log(selectedMember, members);
-    const currUser = useSelector((state) => state.auth.userData);
-    const currUserRoleInProject = members.find((obj) => obj.member._id === currUser._id)?.role
-    console.log(currUser, currUserRoleInProject)
-
+    const members = projectMembersQuery.data?.data || [];
+    const isLoading = projectMembersQuery.isLoading;
+    const isError = projectMembersQuery.isError;
+    const error = projectMembersQuery.error || "";
 
 
-
-    const addProjectMemberHandler = async () => {
-        setIsAddingMember(true)
-        try {
-            setIsAddingMember(true)
+    //mutations:
+    const addProjectMemberMutation = useMutation({
+        mutationFn: async () => {
             const res = await userService.getUserInfo({ username: inputUsername });
-            const newMemberId = res?.data?._id
+            const newMemberId = res?.data?._id;
 
             const r = await projectMemberService.addProjectMember(projectId, newMemberId);
-            if (r) {
-                setMembers((prev) => [r.data, ...prev])
-                setInputUsername("");
-                setShowAddMember(false);
-                toast.success("Member added successfully");
-
-            }
-
-        } catch (error) {
-            console.log("ADD PROJECT MEMBER ERROR ", error);
+            return r;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["projectMembers", projectId]
+            });
+            setInputUsername("");
+            setShowAddMember(false);
+            toast.success("Member added successfully");
+        },
+        onError: (error) => {
             toast.error(error.message)
-
         }
-        setIsAddingMember(false)
+    })
+
+
+    const changeRoleMutation = useMutation({
+        mutationFn: () => projectMemberService.changeProjectMemberRole(projectId, selectedMember.member._id, { role: newRoleOfSelectedMember }),
+        onSuccess: (res) => {
+            queryClient.invalidateQueries({
+                queryKey: ["projectMembers", projectId]
+            });
+            console.log("change roel muttioan res" , res)
+            setSelectedMember((prev) => ({ ...prev, role: res.data.role }))
+            if (newRoleOfSelectedMember === "OWNER") {
+                toast.success("Ownership transfered successfully")
+            } else {
+                toast.success("Role change successfully");
+            }
+        },
+        onError: (error) => {
+            toast.error(error.message)
+        }
+    })
+
+    const removeMemberMutation = useMutation({
+        mutationFn: () => projectMemberService.removeProjectMember(projectId, selectedMember.member._id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["projectMembers", projectId]
+            });
+            setSelectedMember(null);
+            toast.success("Member removed successfully")
+        },
+        onError: (error) => {
+            toast.error(error.message)
+        }
+    })
+
+
+    const addProjectMemberHandler = () => {
+        addProjectMemberMutation.mutate();
     }
 
     const changeRoleHandler = async () => {
@@ -63,94 +98,24 @@ function ProjectMembers() {
             return null;
         }
 
-        setIsChangingRole(true)
-
-        try {
-
-            const res = await projectMemberService.changeProjectMemberRole(
-                projectId,
-                selectedMember.member._id,
-                { role: newRoleOfSelectedMember }
-            );
-
-            if (res) {
-                //update the members state:
-                // setMembers((prev) => {
-                //     const newPrev = prev.map((member) =>
-                //         member._id === res.data._id ?
-                //             { ...member, role: res.data.role }
-                //             :
-                //             member
-                //     )
-                //     return newPrev;
-                // })
-
-                fetchProjectMembers()
-
-                //update the selected member state:
-                setSelectedMember((prev) => ({ ...prev, role: res.data.role }));
-
-                if (newRoleOfSelectedMember === "OWNER") {
-                    toast.success("Ownership transfered successfully")
-                } else {
-                    toast.success("Role change successfully");
-                }
-
-            }
-
-        } catch (error) {
-            console.log("CHANGE ROLE ERROR", error);
-            toast.error(error.message)
-        }
-
-        setIsChangingRole(false)
+        changeRoleMutation.mutate();
     }
 
     const removeMemberHandler = async () => {
-        setIsRemovingMember(true)
-        try {
-            const res = await projectMemberService.removeProjectMember(projectId, selectedMember.member._id)
-            if (res) {
-                setMembers((prev) => (prev.filter((member) => member._id !== selectedMember._id)));
-                setSelectedMember(null);
-                toast.success("Member removed successfully")
-            }
-
-        } catch (error) {
-            console.log('REMOVE MEMBER ERROR', error)
-            toast.error(error.message)
-        }
-        setIsRemovingMember(false)
+        removeMemberMutation.mutate();
     }
 
-    const fetchProjectMembers = async () => {
-        try {
-            setError("")
-            const res = await projectMemberService.getAllProjectMembers(projectId);
-            if (res) {
-                setMembers(res.data);
+    const isAddingMember = addProjectMemberMutation.isPending
+    const isChangingRole = changeRoleMutation.isPending
+    const isRemovingMember = removeMemberMutation.isPending
 
-            }
-
-        } catch (error) {
-            console.log("PROJECT MEMBERS ERROR ", error);
-            setError(error.message)
-        }
-        finally {
-            setIsLoading(false)
-        }
-
-    };
-
-    useEffect(() => {
-        fetchProjectMembers();
-
-    }, [projectId]);
+    const currUser = useSelector((state) => state.auth.userData);
+    const currUserRoleInProject = members.find((obj) => obj.member._id === currUser?._id)?.role
 
 
     return (
-        error ?
-            <ErrorMessage message={error} onRetry={fetchProjectMembers} />
+        isError ?
+            <ErrorMessage message={error} onRetry={() => projectMembersQuery.refetch()} />
             :
             <div className="min-h-screen bg-slate-100 p-6">
 
@@ -450,15 +415,15 @@ function ProjectMembers() {
                                     {['OWNER', 'ADMIN'].includes(currUserRoleInProject) &&
 
                                         <>
-                                        <Button
-                                            disabled={isChangingRole}
-                                            onClick={changeRoleHandler}
-                                            className={`rounded-sm  px-4 py-2 text-sm font-medium text-white transition 
-                                            ${isChangingRole ? "bg-indigo-900" : "bg-indigo-600 hover:bg=indigo-700"}
+                                            <Button
+                                                disabled={isChangingRole}
+                                                onClick={changeRoleHandler}
+                                                className={`rounded-sm  px-4 py-2 text-sm font-medium text-white transition 
+                                            ${isChangingRole ? "bg-indigo-900" : "bg-indigo-600 hover:bg-indigo-700"}
                                             `}
-                                        >
-                                            {isChangingRole ? "Changing..." : "Change Role"}
-                                        </Button>
+                                            >
+                                                {isChangingRole ? "Changing..." : "Change Role"}
+                                            </Button>
 
 
                                             <Button
@@ -469,7 +434,7 @@ function ProjectMembers() {
                                                 {isRemovingMember ? "Removing..." : "Remove Member"}
                                             </Button>
                                         </>
-                                        }
+                                    }
 
                                 </div>
 

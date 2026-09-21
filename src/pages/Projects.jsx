@@ -5,52 +5,29 @@ import { setProjects } from "../store/projectSlice";
 import ProjectCard from "../components/ProjectCard";
 import { useNavigate } from "react-router-dom";
 import { Button, ErrorMessage, Loading, Select } from "../components";
+import { useQuery } from "@tanstack/react-query";
 
 function Projects() {
-    const dispatch = useDispatch();
-    const userProjects = useSelector((state) => state.project.projects);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(null);
-
     const [page, setPage] = useState(1);
     const [status, setStatus] = useState("");
-    const [totalPages, setTotalPages] = useState(1);
-
     const navigate = useNavigate();
-    console.log("proejcts", userProjects)
 
-    const fetchProjects = async () => {
-        try {
-            setError("")
-            const projects = await projectService.getProjects({
+    const { data , isPending, isLoading, isError, error , refetch } = useQuery({
+        queryKey: ["projects", page, status],
+        queryFn: () => {
+            return projectService.getProjects({
                 page,
-                limit: 6,
+                limit : 6 ,
                 status: status === 'ALL' ? "" : status,
-            });
-
-            if (projects?.data) {
-                console.log("projecs res ", projects)
-                dispatch(setProjects(projects.data.projects));
-                setTotalPages(projects.data.totalPages)
-
-            }
-        } catch (error) {
-            setError(error.message)
-            console.log("Projects fetch error:", error);
+            })
         }
-        finally {
-            setIsLoading(false);
-        }
-    };
+    })
 
-
-    useEffect(() => {
-        fetchProjects();
-    }, [page, status]);
+    const totalPages = data?.data?.totalPages || 0;
 
     return (
-        error ?
-            <ErrorMessage message={error} onRetry={fetchProjects} />
+        isError ?
+            <ErrorMessage message={error} onRetry={refetch} />
             :
             <div className="min-h-screen bg-slate-100 p-6">
 
@@ -107,7 +84,7 @@ function Projects() {
                 {isLoading ?
                     <Loading />
                     :
-                    userProjects.length === 0 ?
+                    data?.data.projects?.length === 0 ?
                         <div className="flex min-h-[300px] flex-col items-center justify-center rounded-xl border border-slate-200 bg-white px-6 text-center shadow-sm">
 
                             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-indigo-100">
@@ -146,7 +123,7 @@ function Projects() {
                         :
                         <>
                             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                                {userProjects.map((project) => (
+                                {data?.data.projects?.map((project) => (
                                     <ProjectCard
                                         key={project._id}
                                         project={project}

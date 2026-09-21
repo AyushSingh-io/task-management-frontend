@@ -1,14 +1,15 @@
-import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Input, Button, Select } from "../index.js"
 import { useNavigate } from "react-router-dom";
 import projectService from "../../services/projectService.js";
 import { toast } from "sonner";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
 
 
 
 function ProjectForm({ project }) {
-    const [isCreating, setIsCreating] = useState(false)
+    const navigate = useNavigate();
 
     const { register, handleSubmit, reset, setError, formState: { errors } } = useForm({
         defaultValues: {
@@ -18,68 +19,77 @@ function ProjectForm({ project }) {
         },
     });
 
-    const navigate = useNavigate();
 
+    const queryClient = useQueryClient();
 
-    const submitHandler = async (data) => {
-        //convert data to formData:
-        try {
-            setIsCreating(true)
-            const formData = new FormData();
-
-            if (data?.coverImage[0]) {
-                formData.append("coverImage", data.coverImage[0])
-            }
-            formData.append("name", data.name)
-            formData.append("description", data.description)
-            formData.append("status", data.status)
-
-
-            if (project) { //update project
-                const updatedProjectRes = await projectService.updateProject(project._id, formData);
-                if (updatedProjectRes) {
-
-                    navigate(`/projects/${updatedProjectRes.data._id}`);
-                    setIsCreating(false)
-                    toast.success("Project updated successfully");
-                }
-            }
-            else {
-                const newProjectRes = await projectService.createProject(formData);
-                if (newProjectRes) {
-
-                    navigate("/projects");
-                    setIsCreating(false)
-                    toast.success("Project created successfully")
-                }
-            }
-
-        } catch (error) {
-            console.log("ProjectForm error : ", error);
-
+    const createProjectMutation = useMutation({
+        mutationFn: (formData) => projectService.createProject(formData),
+        onSuccess: () => {
+            toast.success("project created successfully");
+            queryClient.invalidateQueries({
+                queryKey: ["projects"]
+            })
+            navigate("/projects")
+        },
+        onError: (error) => {
+            toast.error(error.message)
             setError("root.serverError", {
                 type: "server",
                 message: error.message
             })
+        }
+    })
 
-            toast.error(error.message)
+    const updateProjectMutation = useMutation({
+        mutationFn: (formData) => projectService.updateProject(project._id, formData),
+        onSuccess: () => {
+            toast.success("project updated successfully");
+            queryClient.invalidateQueries({
+                queryKey: ["project", project._id]
+            })
+            navigate(`/projects/${project._id}`);
+        },
+        onError: (error) => {
+            toast.error(error.message);
+            setError("root.serverError", {
+                type: "server",
+                message: error.message
+            })
+        }
+    })
 
-            setIsCreating(false)
+    const isPending = createProjectMutation.isPending || updateProjectMutation.isPending;
+
+    const submitHandler = async (data) => {
+        //convert data to formData:
+        const formData = new FormData();
+
+        if (data?.coverImage[0]) {
+            formData.append("coverImage", data.coverImage[0])
+        }
+        formData.append("name", data.name)
+        formData.append("description", data.description)
+        formData.append("status", data.status)
+
+        if (project) {
+            updateProjectMutation.mutate(formData)
+        } else {
+            createProjectMutation.mutate(formData)
         }
     }
 
-    useEffect(() => {
+    // useEffect(() => {
 
-        if (project) {
-            reset({
-                name: project?.name || "",
-                description: project?.description || "",
-                status: project?.status || "ACTIVE",
-            })
-        }
+    //     if (project) {
+    //         reset({
+    //             name: project?.name || "",
+    //             description: project?.description || "",
+    //             status: project?.status || "ACTIVE",
+    //         })
+    //     }
 
 
-    }, [project, reset])
+    // }, [project, reset])
 
 
 
@@ -159,16 +169,16 @@ function ProjectForm({ project }) {
             {/* Footer / Action */}
             <div className="flex justify-end border-t border-indigo-100 bg-white px-6 py-4">
                 <Button
-                    disabled ={isCreating}
+                    disabled={isPending}
                     type="submit"
                     className={`min-w-36 rounded-md px-5 py-2.5 font-medium text-white transition
-        ${isCreating
+        ${isPending
                             ? "bg-indigo-800 cursor-not-allowed"
                             : "bg-indigo-600 hover:bg-indigo-700"
                         }`}
                 >
                     {
-                        isCreating ? (project ? "Updating" : "Creating") :
+                        isPending ? (project ? "Updating" : "Creating") :
                             (project ? "Update Project" : "Create Project")
                     }
                 </Button>
@@ -177,5 +187,6 @@ function ProjectForm({ project }) {
         </form>
     )
 }
+
 
 export default ProjectForm;

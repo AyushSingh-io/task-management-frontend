@@ -1,74 +1,64 @@
-import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import projectService from "../services/projectService";
 import taskService from "../services/taskService";
 import { Button, ErrorMessage, Loading } from "../components/index.js";
 import { toast } from "sonner";
+import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
 
 
 function ProjectDetails() {
 
     const { projectId } = useParams();
     const navigate = useNavigate();
+    const queryClient = useQueryClient()
 
-    const [project, setProject] = useState({});
-    const [tasks, setTasks] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(null)
-    const [isDeleting, setIsDeleting] = useState(false)
-    console.log(project)
+    const projectQuery = useQuery({
+        queryKey: ["project", projectId],
+        queryFn: () => projectService.getProjectById(projectId)
+    })
 
-    const deleteProjectHandler = async () => {
-        try {
-            setIsDeleting(true)
-            const deletedProjectRes = await projectService.deleteProject(projectId);
+    const projectTasksQuery = useQuery({
+        queryKey: ["projectTasks", projectId],
+        queryFn: () => taskService.getProjectTasks(projectId)
+    })
 
-            if (deletedProjectRes) {
-                navigate("/projects");
-                setIsDeleting(false)
-                toast.success(`${deletedProjectRes.data.name} deleted successfully`)
-            }
-        } catch (error) {
-            console.log("DELETE PROJECT ERROR ", error);
+    const project = projectQuery.data?.data
+    const tasks = projectTasksQuery.data?.data || []
+
+    const isError = projectQuery.isError || projectTasksQuery.isError;
+    const isLoading = projectQuery.isLoading || projectTasksQuery.isLoading
+    const error = projectQuery.error || projectTasksQuery.error
+
+    const deleteMutation = useMutation({
+        mutationFn: () => projectService.deleteProject(projectId),
+
+        onSuccess: () => {
+            console.log("successfully deleted");
+            queryClient.invalidateQueries({
+                queryKey: ["projects"]
+            })
+
+            navigate("/projects")
+            toast.success(`deleted successfully`)
+        },
+
+        onError: (error) => {
+            console.log("error occured while deleting")
             toast.error(error.message)
         }
-    };
+    })
 
-    const fetchProjectDetails = async () => {
-        try {
-            setError("")
-            const [project, tasks] = await Promise.all([
-                projectService.getProjectById(projectId),
-                taskService.getProjectTasks(projectId)
-            ]);
-            console.log(tasks)
-
-            if (project) {
-                setProject(project.data);
-            }
-
-            if (tasks && tasks.data?.length > 0) {
-                setTasks(tasks.data);
-            }
-
-        } catch (error) {
-            setError(error.message)
-        }
-        finally {
-            setIsLoading(false);
-        }
+    const deleteProjectHandler = () => {
+        deleteMutation.mutate();
     }
 
 
-    useEffect(() => {
-        fetchProjectDetails();
-
-    }, [projectId]);
-
-
     return (
-        error ?
-            <ErrorMessage message={error} onRetry={fetchProjectDetails} />
+        isError ?
+            <ErrorMessage message={error} onRetry={() => {
+                projectQuery.refetch();
+                projectTasksQuery.refetch();
+            }} />
             :
             <div className="min-h-screen bg-slate-100 p-6">
 
@@ -103,11 +93,11 @@ function ProjectDetails() {
                                 <div className="flex flex-wrap items-center gap-3">
 
                                     <h2 className="text-2xl font-bold text-slate-900">
-                                        {project.name || "Project"}
+                                        {project?.name || "Project"}
                                     </h2>
 
                                     <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
-                                        {project.status || "Unknown"}
+                                        {project?.status || "Unknown"}
                                     </span>
 
                                 </div>
@@ -131,25 +121,25 @@ function ProjectDetails() {
                                     Show Members
                                 </Button>
 
-                                 {project.currUserRole === "OWNER" && ( 
+                                {project?.currUserRole === "OWNER" && (
                                     <>
-                                    <Button
-                                    onClick={() =>
-                                        navigate(`/projects/${projectId}/edit`)
-                                    }
-                                    className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
-                                >
-                                    Update
-                                </Button>
+                                        <Button
+                                            onClick={() =>
+                                                navigate(`/projects/${projectId}/edit`)
+                                            }
+                                            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+                                        >
+                                            Update
+                                        </Button>
 
-                                <Button
-                                    onClick={deleteProjectHandler}
-                                    disabled={isDeleting}
-                                    className={`rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm  ${isDeleting ? "bg-red-900" : "bg-red-600 transition hover:bg-red-700"}`}
-                                >
-                                    {isDeleting ? "Deleting" : "Delete"}
-                                </Button>
-                                </>)}
+                                        <Button
+                                            onClick={deleteProjectHandler}
+                                            disabled={deleteMutation.isPending}
+                                            className={`rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm  ${deleteMutation.isPending ? "bg-red-900" : "bg-red-600 transition hover:bg-red-700"}`}
+                                        >
+                                            {deleteMutation.isPending ? "Deleting" : "Delete"}
+                                        </Button>
+                                    </>)}
 
                             </div>
 
@@ -333,11 +323,11 @@ function ProjectDetails() {
                         <div className="flex items-center gap-3">
 
                             <span className="rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700">
-                                {tasks.length} {tasks.length === 1 ? "Task" : "Tasks"}
+                                {tasks?.length} {tasks?.length === 1 ? "Task" : "Tasks"}
                             </span>
 
 
-                            {(["OWNER", "ADMIN"].includes(project.currUserRole)) &&  <Button
+                            {(["OWNER", "ADMIN"].includes(project?.currUserRole)) && <Button
                                 onClick={() =>
                                     navigate(`/projects/${projectId}/tasks/create`)
                                 }

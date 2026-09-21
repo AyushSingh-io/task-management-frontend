@@ -1,13 +1,15 @@
-import React, { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import { Input, Button, Select } from "../index.js"
 import taskService from "../../services/taskService.js"
 import { toast } from "sonner";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 
 function TaskForm({ task }) {
-    const [isCreating, setIsCreating] = useState(false)
+    const navigate = useNavigate();
+    const { projectId, taskId } = useParams();
 
     const { register, handleSubmit, reset, setError, formState: { errors } } = useForm({
         defaultValues: {
@@ -18,46 +20,75 @@ function TaskForm({ task }) {
             completedAt: task?.completedAt ? new Date(task.completedAt).toISOString().split("T")[0] : ""
         }
     });
-    const navigate = useNavigate();
-    const { projectId, taskId } = useParams();
 
 
-    const submitHandler = async (data) => {
-        setIsCreating(true)
-        try {
-            if (task) {
-                const res = await taskService.updateTaskById(taskId, data);
-                if (res) {
-                    navigate(`/projects/${projectId}/tasks/${res.data._id}`)
-                    toast.success("Task updated successfully")
-                }
-            }
-            else {
-                const res = await taskService.createTask(projectId, data)
-                if (res) {
-                    navigate(`/projects/${projectId}`);
-                    toast.success("Task created successfully")
-                }
-            }
-        } catch (error) {
+    const queryClient = useQueryClient()
+
+    const createTaskMutation = useMutation({
+        mutationFn: (data) => taskService.createTask(projectId, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["projectTasks", projectId]
+            });
+
+            queryClient.invalidateQueries({
+                queryKey: ["task", taskId]
+            });
+            toast.success("Task created successfully");
+            navigate(`/projects/${projectId}`);
+        },
+
+        onError: (error) => {
             setError("root.serverError", {
                 type: "server",
                 message: error.message
             })
             toast.error(error.message)
         }
-        setIsCreating(false)
+    })
+
+    const updateTaskMutation = useMutation({
+        mutationFn: (data) => taskService.updateTaskById(taskId, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["projectTasks", projectId],
+                queryKey: ["task", taskId]
+            });
+            toast.success("Task updated successfully");
+            navigate(`/projects/${projectId}/tasks/${taskId}`)
+        },
+
+        onError: (error) => {
+            setError("root.serverError", {
+                type: "server",
+                message: error.message
+            })
+            toast.error(error.message)
+        }
+    })
+
+    const isPending = createTaskMutation.isPending || updateTaskMutation.isPending;
+
+    const submitHandler = (data) => {
+        if (task) {
+            updateTaskMutation.mutate(data)
+        }
+        else {
+            createTaskMutation.mutate(data)
+        }
     }
 
-    useEffect(() => {
-        reset({
-            name: task?.name || "",
-            description: task?.description || "",
-            priority: task?.priority || "MEDIUM",
-            dueDate: task?.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : "",
-            completedAt: task?.completedAt ? new Date(task.completedAt).toISOString().split('T')[0] : ""
-        })
-    }, [task, reset])
+
+    // useEffect(() => {
+    //     reset({
+    //         name: task?.name || "",
+    //         description: task?.description || "",
+    //         priority: task?.priority || "MEDIUM",
+    //         dueDate: task?.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : "",
+    //         completedAt: task?.completedAt ? new Date(task.completedAt).toISOString().split('T')[0] : ""
+    //     })
+    // }, [task, reset])
+
 
     return (
         <form
@@ -149,11 +180,12 @@ function TaskForm({ task }) {
             {/* Footer / Action */}
             <div className="flex justify-end border-t border-emerald-100 bg-white px-6 py-4">
                 <Button
+                    disabled={isPending}
                     type="submit"
-                    className={`min-w-36 rounded-md  px-5 py-2.5 font-medium text-white  ${isCreating ? "bg-emerald-900" : "bg-emerald-600 transition hover:bg-emerald-700"}`}
+                    className={`min-w-36 rounded-md  px-5 py-2.5 font-medium text-white  ${isPending ? "bg-emerald-900" : "bg-emerald-600 transition hover:bg-emerald-700"}`}
                 >
                     {
-                        isCreating ? (task ? "Updating..." : "Creating...") :
+                        isPending ? (task ? "Updating..." : "Creating...") :
                             (task ? "Update Task" : "Create Task")}
                 </Button>
             </div>

@@ -6,27 +6,114 @@ import projectMemberService from '../services/projectMemberService.js'
 import { Select, Button, Loading, ErrorMessage } from "../components/index.js"
 import { toast } from "sonner";
 import { useSelector } from "react-redux";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { isPending } from "@reduxjs/toolkit";
 
 
 function TaskDetails() {
     const { projectId, taskId } = useParams();
-    const [task, setTask] = useState();
-    const [comments, setComments] = useState([]);
+    const queryClient = useQueryClient();
     const navigate = useNavigate();
+
     const [inputComment, setInputComment] = useState("");
     const [showAssignMembers, setShowAssignMembers] = useState(false);
-    const [projectMembers, setProjectMembers] = useState([])
 
-    const [isLoading, setIsLoading] = useState(true);
     const [selectedStatus, setSelectedStatus] = useState("");
-    const [updatingStatus, setUpdatingStatus] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false)
-    const [isAddingComment, setIsAddingComment] = useState(false);
-    const [error, setError] = useState(null)
 
-    const currUser = useSelector((state) => state.auth.userData);
-    const currUserRoleInProject = projectMembers.find((obj) => obj.member._id === currUser._id)?.role;
-    console.log(task)
+    //Fetching queries : 
+    const taskQuery = useQuery({
+        queryKey: ["task", taskId],
+        queryFn: () => taskService.getTaskById(taskId)
+    })
+    const commentQuery = useQuery({
+        queryKey: ["taskComments", taskId],
+        queryFn: () => commentService.getAllComments(taskId)
+    })
+    const projectMembersQuery = useQuery({
+        queryKey: ["projectMembers", projectId],
+        queryFn: () => projectMemberService.getAllProjectMembers(projectId)
+    })
+
+    const task = taskQuery.data?.data;
+
+    useEffect(() => {
+        setSelectedStatus(task?.status)
+    }, [task])
+
+    const comments = commentQuery.data?.data || [];
+    const projectMembers = projectMembersQuery.data?.data || [];
+
+    const isLoading = taskQuery.isLoading || commentQuery.isLoading || projectMembersQuery.isLoading;
+    const isError = taskQuery.isError || commentQuery.isError || projectMembersQuery.isError;
+    const error = taskQuery.error || commentQuery.error || projectMembersQuery.error;
+
+
+
+    //Mutation queries :
+    const assignTaskMutation = useMutation({
+        mutationFn: (member) => taskService.assignTask(taskId, { assignedTo: member.member._id }),
+        onSuccess: (res) => {
+            setShowAssignMembers(false);
+            toast.success("Task assigned successfully");
+            // queryClient.setQueryData(["task", taskId], (oldData) => res);
+            queryClient.invalidateQueries({
+                queryKey: ["task", taskId]
+            });
+            queryClient.invalidateQueries({
+                queryKey: ["projectTasks", projectId]
+            })
+        },
+        onError: (error) => {
+            toast.error(error.message)
+        }
+    })
+
+    const deleteTaskMutation = useMutation({
+        mutationFn: () => taskService.deleteTaskById(taskId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["projectTasks", projectId]
+            });
+
+            navigate(`/projects/${projectId}`);
+            toast.success("Task deleted successfully")
+        },
+        onError: (error) => {
+            toast.error(error.message)
+        }
+    })
+
+    const addCommentMutation = useMutation({
+        mutationFn: (content) => commentService.addCommentToTask(taskId, { content }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["taskComments", taskId]
+            });
+            setInputComment("");
+            toast.success("Comment added successfully");
+        },
+        onError: (error) => {
+            toast.error(error.message)
+        }
+    })
+
+    const updateStatusMutation = useMutation({
+        mutationFn: () => taskService.updateTaskStatus(taskId, { status: selectedStatus }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["task", taskId]
+            });
+            queryClient.invalidateQueries({
+                queryKey: ["projectTasks", projectId]
+            });
+
+            toast.success(`Update task status to ${selectedStatus}`)
+        },
+        onError: (error) => {
+            toast.error(error.message)
+        }
+    })
+
 
     const dateConverter = (d) => {
         const date = new Date(d);
@@ -38,48 +125,29 @@ function TaskDetails() {
         return formattedDate;
     }
 
-    const updateHandler = async () => {
+    const currUser = useSelector((state) => state.auth.userData);
+    const currUserRoleInProject = projectMembers.find((obj) => obj.member._id === currUser?._id)?.role;
+    const isDeleting = deleteTaskMutation.isPending;
+    const isAddingComment = addCommentMutation.isPending;
+    const updatingStatus = updateStatusMutation.isPending;
+
+
+    const updateHandler = () => {
         navigate(`/projects/${projectId}/tasks/${taskId}/edit`)
     }
 
-    const deleteHandler = async () => {
-        setIsDeleting(true)
-        try {
-            const res = await taskService.deleteTaskById(taskId);
-            if (res) {
-                navigate(`/projects/${projectId}`);
-                toast.success("Task deleted successfully")
-            }
-        } catch (error) {
-            console.log('DELETE TASK ERROR ', error)
-            toast.error(error.message)
-        }
-        setIsDeleting(false)
+    const deleteHandler =  () => {
+        deleteTaskMutation.mutate();
     }
 
-    const addCommentHandler = async () => {
+    const addCommentHandler =  () => {
         if (!inputComment.trim()) {
             return;
         }
-
-        setIsAddingComment(true)
-        try {
-            const res = await commentService.addCommentToTask(taskId, { content: inputComment });
-            if (res) {
-                console.log(res)
-                setComments((prev) => [res.data, ...prev]);
-                setInputComment("");
-                toast.success("Comment added successfully")
-            }
-        } catch (error) {
-            console.log("ADD COMMENT ERROR", error)
-            toast.error(error.message)
-        }
-        setIsAddingComment(false)
-
+        addCommentMutation.mutate(inputComment.trim(isPending))
     }
 
-    const assignTaskHandler = async (member) => {
+    const assignTaskHandler =  (member) => {
         //TODO : update assignTask controller to populate task
 
         if (task.assignedTo === member.member._id) {
@@ -88,78 +156,59 @@ function TaskDetails() {
             return;
         }
 
-        try {
-            const res = await taskService.assignTask(taskId, { assignedTo: member.member._id });
-            if (res) {
-                console.log(res, res.data)
-                setTask(res.data)
-                setShowAssignMembers(false)
-                toast.success("Task assigned successfully")
-            }
-        } catch (error) {
-            console.log("ASSIGN TASK ERROR", error)
-            toast.error(error.message)
-        }
+        assignTaskMutation.mutate(member);
     }
 
-    const updateStatusHandler = async () => {
-        setUpdatingStatus(true)
-        try {
-            const res = await taskService.updateTaskStatus(taskId, { status: selectedStatus });
-            console.log("responsee is ", res)
-            if (res) {
-                setTask((prev) => ({ ...prev, status: res.data.status }))
-                setUpdatingStatus(false)
-                toast.success(`Update task status to ${selectedStatus}`)
-            }
-
-        } catch (error) {
-            console.log('UPDATE STATUS ERROR', error)
-            toast.error(error.message)
-        }
+    const updateStatusHandler =  () => {
+        updateStatusMutation.mutate();
     }
 
-    const fetchTaskDetails = async () => {
-        try {
-            setError("")
-            const [taskRes, commentRes, projectMembersRes] = await Promise.all([
-                taskService.getTaskById(taskId),
-                commentService.getAllComments(taskId),
-                projectMemberService.getAllProjectMembers(projectId),
-            ]);
+    // const fetchTaskDetails = async () => {
+    //     try {
+    //         setError("")
+    //         const [taskRes, commentRes, projectMembersRes] = await Promise.all([
+    //             taskService.getTaskById(taskId),
+    //             commentService.getAllComments(taskId),
+    //             projectMemberService.getAllProjectMembers(projectId),
+    //         ]);
 
-            if (taskRes) {
-                setTask(taskRes.data);
-                setSelectedStatus(taskRes.data.status)
-            }
-            if (commentRes) {
-                setComments(commentRes.data)
-            }
-            if (projectMembersRes) {
-                setProjectMembers(projectMembersRes.data)
-            }
+    //         if (taskRes) {
+    //             setTask(taskRes.data);
+    //             setSelectedStatus(taskRes.data.status)
+    //         }
+    //         if (commentRes) {
+    //             setComments(commentRes.data)
+    //         }
+    //         if (projectMembersRes) {
+    //             setProjectMembers(projectMembersRes.data)
+    //         }
+
+    //     } catch (error) {
+    //         console.log("TASK DETAILS ERROR,", error);
+    //         setError(error.message)
+    //         // navigate(`/projects/${projectId}`);
+    //     }
+    //     finally {
+    //         setIsLoading(false);
+    //     }
+
+    // }
 
 
 
-        } catch (error) {
-            console.log("TASK DETAILS ERROR,", error);
-            setError(error.message)
-            // navigate(`/projects/${projectId}`);
-        }
-        finally {
-            setIsLoading(false);
-        }
 
-    }
 
-    useEffect(() => {
-        fetchTaskDetails();
-
-    }, [taskId, projectId])
+    // useEffect(() => {
+    //     fetchTaskDetails();
+    // }, [taskId, projectId])
 
     return (
-        error ?
-            <ErrorMessage message={error} onRetry={fetchTaskDetails} />
+        isError ?
+            <ErrorMessage message={error} onRetry={() => {
+                taskQuery.refetch();
+                commentQuery.refetch();
+                projectMembersQuery.refetch();
+            }} />
             :
             <div className="min-h-screen bg-slate-100 p-4 md:p-6">
 
@@ -431,7 +480,7 @@ function TaskDetails() {
 
                                     {/* Comment 1 */}
                                     {
-                                        comments ?
+                                        comments.length > 0 ?
                                             comments.map((comment) => (
                                                 <div key={comment._id} className="rounded-lg border border-emerald-100 bg-white p-4">
 
@@ -474,7 +523,7 @@ function TaskDetails() {
 
                                                 </div>
                                             ))
-                                            : <p>no comments</p>
+                                            : <p>No comments yet</p>
                                     }
 
                                 </div>}

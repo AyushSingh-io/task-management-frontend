@@ -6,7 +6,7 @@ const projectService = {
         body: data   //FormData
     }),
 
-    getProjects: ({page = 1 , limit = 10 , status}) => {
+    getProjects: ({page = 1 , limit = 5 , status}) => {
         const params = new URLSearchParams();
         params.append("page" , page);
         params.append("limit", limit)
