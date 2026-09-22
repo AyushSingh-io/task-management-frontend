@@ -1,57 +1,36 @@
-import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useState } from "react";
 import taskService from "../services/taskService.js"
-import { setAssignedTasks } from "../store/taskSlice.js"
 import { useNavigate } from "react-router-dom";
 import { Select, TaskCard, Loading, ErrorMessage } from "../components/index.js";
+import { useQuery } from "@tanstack/react-query";
 
 
 function MyTasks() {
-    const tasks = useSelector((state) => state.task.assignedTasks);
-    const dispatch = useDispatch();
     const navigate = useNavigate();
-    const [isLoading, setIsLoading] = useState(true)
-    const [error, setError] = useState(null)
-
     const [status, setStatus] = useState("");
     const [page, setPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
 
 
-    const fetchAssignedTasks = async () => {
-        try {
-            setError("");
-            const res = await taskService.getAssignedTasks({
-                page,
-                limit: 6,
-                status: status === 'ALL' ? "" : status,
-            });
+    const tasksQuery = useQuery({
+        queryKey: ["myTasks", page, status],
+        queryFn: () => taskService.getAssignedTasks({
+            page,
+            limit: 6,
+            status: status === "ALL" ? undefined : status,
+        })
+    })
 
-            if (res) {
-                dispatch(setAssignedTasks(res.data.assignedTasks));
-                setTotalPages(res.data.totalPages);
-            }
-
-        } catch (error) {
-            console.log("MYTASKS ERROR : ", error)
-            setError(error.message)
-        }
-        finally {
-            setIsLoading(false)
-        }
-    }
-
-    useEffect(() => {
-        fetchAssignedTasks()
-
-    }, [page, status])
-
+    const tasks = tasksQuery.data?.data.assignedTasks || [];
+    const isLoading = tasksQuery.isLoading;
+    const isError = tasksQuery.isError;
+    const error = tasksQuery.error;
+    const totalPages = tasksQuery.data?.data.totalPages || 0;
 
 
     return (
-        error ? <ErrorMessage message={error} onRetry={fetchAssignedTasks} />
+        isError ?
+            <ErrorMessage message={error} onRetry={() => tasksQuery.refetch()} />
             :
-
             <div className="min-h-screen bg-green-50 px-4 py-10 sm:px-6 lg:px-10">
                 <div className="mx-auto max-w-7xl">
 
@@ -131,9 +110,10 @@ function MyTasks() {
                                         </h3>
 
                                         <p className="mt-2 text-sm text-green-700/70">
-                                            {status
+                                            {status && status !== "ALL"
                                                 ? `You don't have any ${status.toLowerCase().replace("_", " ")} tasks.`
                                                 : "You don't have any tasks assigned to you yet."
+
                                             }
                                         </p>
                                     </div>

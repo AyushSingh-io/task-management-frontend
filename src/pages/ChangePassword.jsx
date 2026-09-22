@@ -3,46 +3,39 @@ import { Button, Input } from "../components/index.js";
 import { useNavigate } from "react-router-dom";
 import userService from "../services/userService.js";
 import { toast } from "sonner";
+import { useMutation } from "@tanstack/react-query";
 
 function ChangePassword() {
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const navigate = useNavigate();
-    const [isChangingPassword, setIsChangingPassword] = useState(false)
 
-    const ChangePasswordHandler = async () => {
-        setIsChangingPassword(true)
-        try {
-            if (!newPassword || !currentPassword || !currentPassword) {
-                toast.info("Password cannot be empty");
-                return;
-            }
-
-            if (newPassword !== confirmPassword) {
-                toast.info("Confirm the password")
-                return;
-            }
-            const res = await userService.changePassword({
-                oldPassword: currentPassword,
-                newPassword
-            })
-
-            if (res) {
-                navigate("/profile")
-                toast.success("Update password successfully")
-            }
-
-        } catch (error) {
-            console.log("CHANGE PASSWORD ERROR", error)
+    const changePasswordMutation = useMutation({
+        mutationFn: (data) => userService.changePassword(data),
+        onSuccess: () => {
+            navigate("/profile");
+            toast.success("Updated Password successfully")
+        },
+        onError: (error) => {
             toast.error(error.message)
         }
+    })
 
-        finally {
-            setIsChangingPassword(false)
+    const isChangingPassword = changePasswordMutation.isPending;
+
+    const changePasswordHandler = () => {
+        if (!newPassword || !currentPassword || !confirmPassword) {
+            toast.info("Password cannot be empty");
+            return;
         }
 
+        if (newPassword !== confirmPassword) {
+            toast.info("Confirm the password")
+            return;
+        }
 
+        changePasswordMutation.mutate({ oldPassword: currentPassword, newPassword })
     }
 
     return (
@@ -78,7 +71,6 @@ function ChangePassword() {
                     <div className="px-6 py-6">
 
                         <div className="space-y-5">
-
                             <Input
                                 value={currentPassword}
                                 onChange={(e) => setCurrentPassword(e.target.value)}
@@ -110,7 +102,7 @@ function ChangePassword() {
 
                             <Button
                                 disabled={isChangingPassword}
-                                onClick={ChangePasswordHandler}
+                                onClick={changePasswordHandler}
                                 type="button"
                                 className={`rounded-lg  px-5 py-2.5 text-sm font-semibold text-white  ${isChangingPassword ? "bg-blue-900" : "bg-blue-600 transition hover:bg-blue-700"}`}
                             >

@@ -1,11 +1,11 @@
-
-import React, { use, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Button, Input } from "../components/index.js";
 import { useNavigate } from "react-router-dom";
 import userService from "../services/userService.js"
 import { useDispatch, useSelector } from "react-redux";
 import { login } from "../store/authSlice.js";
 import { toast } from "sonner";
+import { useMutation } from "@tanstack/react-query";
 
 function EditProfile() {
     const [username, setUsername] = useState("");
@@ -13,51 +13,49 @@ function EditProfile() {
     const navigate = useNavigate();
     const avatarInputRef = useRef(null);
     const dispatch = useDispatch()
-    const [isChangingAvatar, setIsChangingAvatar] = useState(false)
+
+    const updateProfileMutation = useMutation({
+        mutationFn: () => userService.updateProfile({ username, email }),
+        onSuccess: (res) => {
+            dispatch(login(res.data))
+            navigate("/profile");
+            toast.success("User Details updated successfully")
+        },
+        onError: (error) => {
+            toast.error(error.message)
+        }
+    })
+
+    const updateAvatarMutation = useMutation({
+        mutationFn: (data) => userService.updateUserAvatar(data),
+        onSuccess: (res) => {
+            dispatch(login(res.data))
+            navigate('/profile');
+            toast.success("Avatar updated successfully")
+        },
+        onError: (error) => {
+            console.log("error is", error)
+            toast.error(error.message);
+        }
+    })
 
     const currUsername = useSelector((state) => state.auth.userData?.username)
     const userAvatar = useSelector((state) => state.auth.userData?.avatar);
+    const isChangingAvatar = updateAvatarMutation.isPending;
 
-    const saveChangeHandler = async () => {
-        try {
-            const res = await userService.updateProfile({
-                username,
-                email
-            })
+    const saveChangeHandler = () => {
+        updateProfileMutation.mutate();
+    }
 
-            if (res) {
-                dispatch(login(res.data))
-                navigate("/profile");
-                toast.success("User Details updated successfully")
-            }
-
-        } catch (error) {
-            console.log("UPDATE PROFILE ERROR", error)
-            toast.error(error.message)
+    const handleAvatarChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const formData = new FormData();
+            formData.append("avatar", file);
+            updateAvatarMutation.mutate(formData);
         }
     }
 
-    const handleAvatarChange = async (e) => {
-        setIsChangingAvatar(true)
-        try {
-            const file = e.target.files[0];
-            if (file) {
-                const formData = new FormData();
-                formData.append("avatar", file)
-
-                const res = await userService.updateUserAvatar(formData);
-                if (res) {
-                    dispatch(login(res.data))
-                    navigate('/profile');
-                    toast.success("Avatar updated successfully")
-                }
-            }
-        } catch (error) {
-            console.log('UPDATE AVATAR ERROR', error)
-            toast.error(error.message)
-        }
-        setIsChangingAvatar(false)
-    }
 
 
     return (

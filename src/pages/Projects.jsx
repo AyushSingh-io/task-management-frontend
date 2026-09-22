@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import projectService from "../services/projectService";
-import { setProjects } from "../store/projectSlice";
 import ProjectCard from "../components/ProjectCard";
 import { useNavigate } from "react-router-dom";
 import { Button, ErrorMessage, Loading, Select } from "../components";

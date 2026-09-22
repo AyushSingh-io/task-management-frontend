@@ -1,73 +1,60 @@
-import React, { useEffect, useState } from "react"
-import { useDispatch, useSelector } from "react-redux"
+import React from "react";
 import projectService from "../services/projectService.js";
-import { setProjects } from "../store/projectSlice.js"
 import taskService from "../services/taskService.js";
-import { setAssignedTasks } from "../store/taskSlice.js";
-import { ErrorMessage, Loading } from "../components/index.js";
-
+import { ErrorMessage, Loading, Button } from "../components/index.js";
+import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 
 function Dashboard() {
-    const [loader, setLoader] = useState(true);
-    const [error, setError] = useState("");
-    const dispatch = useDispatch();
-    const userProjects = useSelector((state) => state.project.projects);
-    const userTasks = useSelector((state) => state.task.assignedTasks);
+    const navigate = useNavigate();
 
-    const fetchDashboardData = async () => {
-        try {
-            setError("")
-            const [projects, myTasks] = await Promise.all([
-                projectService.getProjects({}),
-                taskService.getAssignedTasks({})
-            ])
+    const projectsQuery = useQuery({
+        queryKey: ["projects"],
+        queryFn: () => projectService.getProjects({})
+    });
 
-            if (projects?.data) {
-                dispatch(setProjects(projects.data.projects))
-            }
-            if (myTasks?.data) {
-                dispatch(setAssignedTasks(myTasks.data.assignedTasks))
-            }
+    const tasksQuery = useQuery({
+        queryKey: ["myTasks"],
+        queryFn: () => taskService.getAssignedTasks({})
+    });
 
-        } catch (error) {
-            setError(error.message)
-            console.log("Error in dashboard :", error)
-        }
-        finally {
-            setLoader(false)
-        }
-    }
+    const userProjects = projectsQuery.data?.data.projects || [];
+    const userTasks = tasksQuery.data?.data.assignedTasks || [];
 
-    useEffect(() => {
+    const loader = projectsQuery.isLoading || tasksQuery.isLoading;
+    const error = projectsQuery.error || tasksQuery.error;
+    const isError = projectsQuery.isError || tasksQuery.isError;
 
-        fetchDashboardData()
+    return isError ? (
+        <ErrorMessage
+            message={error}
+            onRetry={() => {
+                projectsQuery.refetch();
+                tasksQuery.refetch();
+            }}
+        />
+    ) : (
+        <div className="min-h-screen bg-slate-100 p-6">
 
-    }, [dispatch])
+            {/* Heading */}
+            <div className="mb-6">
+                <h1 className="text-3xl font-bold text-indigo-700">
+                    Dashboard
+                </h1>
 
-    return error ? <ErrorMessage message={error} onRetry={fetchDashboardData} />
-        :
-        (
-            <div className="min-h-screen bg-slate-100 p-6">
+                <p className="mt-1 text-slate-500">
+                    Welcome back! Here's your overview.
+                </p>
+            </div>
 
-                {/* Heading */}
-                <div className="mb-6">
-                    <h1 className="text-3xl font-bold text-indigo-700">
-                        Dashboard
-                    </h1>
+            {/* Main Sections */}
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 
-                    <p className="mt-1 text-slate-500">
-                        Welcome back! Here's your overview.
-                    </p>
-                </div>
+                {/* Projects */}
+                <div className="rounded-xl bg-white p-5 shadow-md">
 
-
-                {/* Main Sections */}
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-
-                    {/* Projects */}
-                    <div className="rounded-xl bg-white p-5 shadow-md">
-
-                        <div className="mb-4 border-b border-indigo-100 pb-3">
+                    <div className="mb-4 flex items-center justify-between border-b border-indigo-100 pb-3">
+                        <div>
                             <h2 className="text-xl font-semibold text-indigo-700">
                                 My Projects
                             </h2>
@@ -78,34 +65,44 @@ function Dashboard() {
                         </div>
 
 
+                        <Button
+                            onClick={() => navigate("/projects")}
+                            className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-700"
+                        >
+                            View All
+                        </Button>
 
-                        {loader ?
-                            <Loading />
-                            :
-                            <div className="space-y-3">
-                                {
-                                    userProjects.map((project) => (
-                                        <div key={project._id} className="rounded-lg border border-indigo-100 bg-indigo-50 p-4" >
-                                            <h3 className="font-medium text-indigo-900">
-                                                {project.name}
-                                            </h3>
-
-                                            <p className="mt-1 text-sm text-indigo-600">
-                                                {project.status}
-                                            </p>
-                                        </div>
-                                    ))
-                                }
-
-                            </div>}
 
                     </div>
 
+                    {loader ? (
+                        <Loading />
+                    ) : (
+                        <div className="space-y-3">
+                            {userProjects.slice(0, 5).map((project) => (
+                                <div
+                                    key={project._id}
+                                    className="rounded-lg border border-indigo-100 bg-indigo-50 p-4"
+                                >
+                                    <h3 className="font-medium text-indigo-900">
+                                        {project.name}
+                                    </h3>
 
-                    {/* Assigned Tasks */}
-                    <div className="rounded-xl bg-white p-5 shadow-md">
+                                    <p className="mt-1 text-sm text-indigo-600">
+                                        {project.status}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
 
-                        <div className="mb-4 border-b border-emerald-100 pb-3">
+                </div>
+
+                {/* Assigned Tasks */}
+                <div className="rounded-xl bg-white p-5 shadow-md">
+
+                    <div className="mb-4 flex items-center justify-between border-b border-emerald-100 pb-3">
+                        <div>
                             <h2 className="text-xl font-semibold text-emerald-700">
                                 Assigned Tasks
                             </h2>
@@ -115,33 +112,45 @@ function Dashboard() {
                             </p>
                         </div>
 
-                        {loader ? <Loading /> : <div className="space-y-3">
-                            {
-                                userTasks.map((task) => (
-                                    <div key={task._id} className="rounded-lg border border-amber-100 bg-amber-50 p-4">
-                                        <h3 className="font-medium text-amber-900">
-                                            {task.name}
-                                        </h3>
-
-                                        <p className="mt-1 text-sm font-medium text-amber-600">
-                                            Status : {task.status}
-                                        </p>
-                                        <p className="mt-1 text-sm font-medium text-amber-600">
-                                            Priority : {task.priority}
-                                        </p>
-
-                                    </div>
-                                ))
-                            }
-
-                        </div>}
-
+                        <Button
+                            onClick={() => navigate("/my-tasks")}
+                            className="rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700"
+                        >
+                            View All
+                        </Button>
                     </div>
+
+                    {loader ? (
+                        <Loading />
+                    ) : (
+                        <div className="space-y-3">
+                            {userTasks.slice(0, 5).map((task) => (
+                                <div
+                                    key={task._id}
+                                    className="rounded-lg border border-amber-100 bg-amber-50 p-4"
+                                >
+                                    <h3 className="font-medium text-amber-900">
+                                        {task.name}
+                                    </h3>
+
+                                    <p className="mt-1 text-sm font-medium text-amber-600">
+                                        Status: {task.status}
+                                    </p>
+
+                                    <p className="mt-1 text-sm font-medium text-amber-600">
+                                        Priority: {task.priority}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
 
                 </div>
 
-            </div >
-        )
+            </div>
+        </div>
+    );
 }
 
-export default Dashboard
+export default Dashboard;
+
