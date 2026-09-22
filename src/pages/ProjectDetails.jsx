@@ -118,7 +118,7 @@ function ProjectDetails() {
                                     }
                                     className="rounded-lg bg-slate-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
                                 >
-                                    Show Members
+                                    Members
                                 </Button>
 
                                 {project?.currUserRole === "OWNER" && (

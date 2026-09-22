@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import authService from "./services/authService.js"
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { login, logout } from "./store/authSlice.js"
 import { Header, Footer } from "./components/index.js"
 import { Outlet } from 'react-router-dom';
@@ -12,6 +12,7 @@ function App() {
   const [loader, setLoader] = useState(true);
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const theme = useSelector((state) => state.theme.theme)
 
   useEffect(() => {
     authService.getCurrentUser()
@@ -32,6 +33,12 @@ function App() {
       })
 
   }, [dispatch])
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark" , theme  === "dark");
+    localStorage.setItem("theme" , theme);
+
+  }, [theme])
 
   return loader ? <h1>Loading...</h1> :
     <>
