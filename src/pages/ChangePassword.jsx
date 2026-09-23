@@ -38,39 +38,45 @@ function ChangePassword() {
         changePasswordMutation.mutate({ oldPassword: currentPassword, newPassword })
     }
 
+
     return (
-        <div className="min-h-screen bg-slate-100 p-4 md:p-6">
+        <div className="min-h-screen bg-slate-100 p-4 dark:bg-slate-950 md:p-6">
             <div className="mx-auto max-w-3xl">
 
                 {/* Header */}
                 <div className="mb-6">
-                    <h1 className="text-2xl font-bold text-slate-800">
+                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
                         Change Password
                     </h1>
 
-                    <p className="mt-1 text-sm text-slate-500">
+                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                         Keep your account secure by updating your password
                     </p>
                 </div>
 
+
                 {/* Password Card */}
-                <div className="rounded-xl border border-blue-100 bg-white shadow-sm">
+                <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
 
                     {/* Header */}
-                    <div className="bg-blue-50 px-6 py-6">
-                        <h2 className="text-lg font-semibold text-slate-800">
+                    <div className="border-b border-slate-200 bg-blue-50 px-6 py-6 dark:border-slate-800 dark:bg-blue-950/20">
+
+                        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
                             Password & Security
                         </h2>
 
-                        <p className="mt-1 text-sm text-slate-500">
+                        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                             Enter your current password and choose a new one.
                         </p>
+
                     </div>
+
 
                     {/* Form */}
                     <div className="px-6 py-6">
 
                         <div className="space-y-5">
+
                             <Input
                                 value={currentPassword}
                                 onChange={(e) => setCurrentPassword(e.target.value)}
@@ -97,14 +103,18 @@ function ChangePassword() {
 
                         </div>
 
+
                         {/* Actions */}
-                        <div className="mt-8 flex flex-col gap-3 border-t border-slate-200 pt-6 sm:flex-row">
+                        <div className="mt-8 flex flex-col gap-3 border-t border-slate-200 pt-6 dark:border-slate-800 sm:flex-row">
 
                             <Button
                                 disabled={isChangingPassword}
                                 onClick={changePasswordHandler}
                                 type="button"
-                                className={`rounded-lg  px-5 py-2.5 text-sm font-semibold text-white  ${isChangingPassword ? "bg-blue-900" : "bg-blue-600 transition hover:bg-blue-700"}`}
+                                className={`rounded-lg px-5 py-2.5 text-sm font-semibold text-white ${isChangingPassword
+                                    ? "bg-blue-900 dark:bg-blue-950"
+                                    : "bg-blue-600 transition hover:bg-blue-700"
+                                    }`}
                             >
                                 {isChangingPassword ? "Updating..." : "Update Password"}
                             </Button>
@@ -112,7 +122,7 @@ function ChangePassword() {
                             <Button
                                 onClick={() => navigate("/profile")}
                                 type="button"
-                                className="rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                                className="rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white"
                             >
                                 Cancel
                             </Button>
@@ -120,10 +130,14 @@ function ChangePassword() {
                         </div>
 
                     </div>
+
                 </div>
+
             </div>
         </div>
     );
+
+
 }
 
 export default ChangePassword;

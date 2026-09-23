@@ -4,13 +4,14 @@ import { Link } from "react-router-dom"
 function ProjectCard({ project }) {
     const createdDate = new Date(project.createdAt).toLocaleDateString()
 
+
     return (
         <Link
             to={`/projects/${project._id}`}
-            className="block overflow-hidden rounded-xl border border-indigo-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+            className="group block overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-indigo-200 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-800"
         >
             {/* Cover Image */}
-            <div className="h-40 w-full bg-indigo-100">
+            <div className="h-40 w-full bg-indigo-100 dark:bg-indigo-950/40">
                 {project.coverImage ? (
                     <img
                         src={project.coverImage}
@@ -18,7 +19,7 @@ function ProjectCard({ project }) {
                         className="h-full w-full object-cover"
                     />
                 ) : (
-                    <div className="flex h-full items-center justify-center text-indigo-400">
+                    <div className="flex h-full items-center justify-center text-sm font-medium text-indigo-400 dark:text-indigo-500">
                         No Cover Image
                     </div>
                 )}
@@ -29,23 +30,23 @@ function ProjectCard({ project }) {
 
                 {/* Name + Status */}
                 <div className="mb-3 flex items-start justify-between gap-3">
-                    <h2 className="text-lg font-semibold text-slate-800">
+                    <h2 className="text-lg font-semibold text-slate-800 transition-colors group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400">
                         {project.name}
                     </h2>
 
-                    <span className="shrink-0 rounded-full bg-indigo-100 px-3 py-1 text-xs font-medium text-indigo-700">
+                    <span className="shrink-0 rounded-full bg-indigo-100 px-3 py-1 text-xs font-medium text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-400">
                         {project.status}
                     </span>
                 </div>
 
                 {/* Description */}
-                <p className="mb-4 line-clamp-2 text-sm text-slate-500">
+                <p className="mb-4 line-clamp-2 text-sm text-slate-500 dark:text-slate-400">
                     {project.description || "No description available"}
                 </p>
 
                 {/* Owner */}
                 <div className="mb-4 flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-indigo-100 font-semibold text-indigo-700">
+                    <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-indigo-100 font-semibold text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-400">
                         {project.owner?.avatar ? (
                             <img
                                 src={project.owner.avatar}
@@ -58,26 +59,28 @@ function ProjectCard({ project }) {
                     </div>
 
                     <div>
-                        <p className="text-xs text-slate-400">
+                        <p className="text-xs text-slate-400 dark:text-slate-500">
                             Project Owner
                         </p>
 
-                        <p className="text-sm font-semibold text-slate-700">
+                        <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                             {project.owner?.username || "Unknown"}
                         </p>
                     </div>
                 </div>
 
                 {/* Created Date */}
-                <div className="border-t border-slate-100 pt-3">
-                    <p className="text-xs text-slate-400">
+                <div className="border-t border-slate-100 pt-3 dark:border-slate-800">
+                    <p className="text-xs text-slate-400 dark:text-slate-500">
                         Created on {createdDate}
                     </p>
                 </div>
 
             </div>
         </Link>
-    )
+    );
+
+
 }
 
 export default ProjectCard

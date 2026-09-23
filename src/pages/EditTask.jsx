@@ -20,8 +20,9 @@ function EditTask() {
         return <ErrorMessage message={taskQuery.error} onRetry={() => taskQuery.refetch()} />
     }
     return (
-        <TaskForm task={taskQuery.data?.data} />
-    )
+        <main className="min-h-screen bg-slate-100 px-4 py-8 dark:bg-slate-950">
+            <TaskForm task={taskQuery.data?.data} />
+        </main>)
 }
 
 export default EditTask;

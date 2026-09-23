@@ -93,16 +93,16 @@ function TaskForm({ task }) {
     return (
         <form
             onSubmit={handleSubmit(submitHandler)}
-            className="mx-auto w-full max-w-3xl overflow-hidden rounded-xl border border-emerald-100 bg-emerald-50 shadow-md"
+            className="mx-auto w-full max-w-3xl overflow-hidden rounded-xl border border-slate-200 bg-white shadow-md dark:border-slate-800 dark:bg-slate-900"
         >
 
             {/* Header */}
-            <div className="border-b border-emerald-100 bg-emerald-100/70 px-6 py-5">
-                <h2 className="text-2xl font-semibold text-emerald-700">
+            <div className="border-b border-emerald-100 bg-emerald-50 px-6 py-5 dark:border-emerald-900/60 dark:bg-emerald-950/30">
+                <h2 className="text-2xl font-semibold text-emerald-700 dark:text-emerald-400">
                     {task ? "Edit Task" : "Create Task"}
                 </h2>
 
-                <p className="mt-1 text-sm text-slate-600">
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
                     {task
                         ? "Update your task details"
                         : "Create a new task to start working on your project"
@@ -112,11 +112,11 @@ function TaskForm({ task }) {
 
 
             {/* Form Fields */}
-            <div className="space-y-5 p-6">
+            <div className="space-y-5 bg-slate-50 p-6 dark:bg-slate-950/40">
 
                 {errors.root?.serverError && (
-                    <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3">
-                        <p className="text-sm font-medium text-red-600">
+                    <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 dark:border-red-900/60 dark:bg-red-950/30">
+                        <p className="text-sm font-medium text-red-600 dark:text-red-400">
                             {errors.root.serverError.message}
                         </p>
                     </div>
@@ -124,7 +124,7 @@ function TaskForm({ task }) {
 
 
                 {/* Name */}
-                <div className="rounded-lg border border-emerald-100 bg-white p-4">
+                <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
                     <Input
                         label="Task Name"
                         placeholder="Enter task name"
@@ -134,7 +134,7 @@ function TaskForm({ task }) {
 
 
                 {/* Description */}
-                <div className="rounded-lg border border-emerald-100 bg-white p-4">
+                <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
                     <Input
                         label="Description"
                         placeholder="Enter task description"
@@ -146,7 +146,7 @@ function TaskForm({ task }) {
                 {/* Dates */}
                 <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
 
-                    <div className="rounded-lg border border-emerald-100 bg-white p-4">
+                    <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
                         <Input
                             label="Due Date"
                             type="date"
@@ -154,7 +154,7 @@ function TaskForm({ task }) {
                         />
                     </div>
 
-                    <div className="rounded-lg border border-emerald-100 bg-white p-4">
+                    <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
                         <Input
                             label="Completed At"
                             type="date"
@@ -166,7 +166,7 @@ function TaskForm({ task }) {
 
 
                 {/* Priority */}
-                <div className="rounded-lg border border-emerald-100 bg-white p-4">
+                <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
                     <Select
                         label="Priority"
                         options={["LOW", "MEDIUM", "HIGH"]}
@@ -178,20 +178,25 @@ function TaskForm({ task }) {
 
 
             {/* Footer / Action */}
-            <div className="flex justify-end border-t border-emerald-100 bg-white px-6 py-4">
+            <div className="flex justify-end border-t border-slate-200 bg-white px-6 py-4 dark:border-slate-800 dark:bg-slate-900">
                 <Button
                     disabled={isPending}
                     type="submit"
-                    className={`min-w-36 rounded-md  px-5 py-2.5 font-medium text-white  ${isPending ? "bg-emerald-900" : "bg-emerald-600 transition hover:bg-emerald-700"}`}
+                    className={`min-w-36 rounded-md px-5 py-2.5 font-medium text-white ${isPending
+                            ? "bg-emerald-900 dark:bg-emerald-950"
+                            : "bg-emerald-600 transition hover:bg-emerald-700"
+                        }`}
                 >
-                    {
-                        isPending ? (task ? "Updating..." : "Creating...") :
-                            (task ? "Update Task" : "Create Task")}
+                    {isPending
+                        ? (task ? "Updating..." : "Creating...")
+                        : (task ? "Update Task" : "Create Task")
+                    }
                 </Button>
             </div>
 
         </form>
-    )
+    );
+
 }
 
 

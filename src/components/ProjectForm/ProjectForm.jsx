@@ -93,18 +93,19 @@ function ProjectForm({ project }) {
 
 
 
+
     return (
         <form
             onSubmit={handleSubmit(submitHandler)}
-            className="mx-auto w-full max-w-3xl overflow-hidden rounded-xl border border-indigo-100 bg-indigo-50 shadow-md"
+            className="mx-auto w-full max-w-3xl overflow-hidden rounded-xl border border-slate-200 bg-white shadow-md dark:border-slate-800 dark:bg-slate-900"
         >
             {/* Header */}
-            <div className="border-b border-indigo-100 bg-indigo-100/70 px-6 py-5">
-                <h2 className="text-2xl font-semibold text-indigo-700">
+            <div className="border-b border-indigo-100 bg-indigo-50 px-6 py-5 dark:border-indigo-900/60 dark:bg-indigo-950/30">
+                <h2 className="text-2xl font-semibold text-indigo-700 dark:text-indigo-400">
                     {project ? "Edit Project" : "Create Project"}
                 </h2>
 
-                <p className="mt-1 text-sm text-slate-600">
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
                     {project
                         ? "Update your project details"
                         : "Create a new project to start managing your tasks"
@@ -114,18 +115,19 @@ function ProjectForm({ project }) {
 
 
             {/* Form Fields */}
-            <div className="space-y-5 p-6">
+            <div className="space-y-5 bg-slate-50 p-6 dark:bg-slate-950/40">
 
                 {errors.root?.serverError && (
-                    <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3">
-                        <p className="text-sm font-medium text-red-600">
+                    <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 dark:border-red-900/60 dark:bg-red-950/30">
+                        <p className="text-sm font-medium text-red-600 dark:text-red-400">
                             {errors.root.serverError.message}
                         </p>
                     </div>
                 )}
 
+
                 {/* Name */}
-                <div className="rounded-lg border border-indigo-100 bg-white p-4">
+                <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
                     <Input
                         label="Project Name"
                         placeholder="Enter project name"
@@ -135,7 +137,7 @@ function ProjectForm({ project }) {
 
 
                 {/* Description */}
-                <div className="rounded-lg border border-indigo-100 bg-white p-4">
+                <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
                     <Input
                         label="Description"
                         placeholder="Enter project description"
@@ -145,7 +147,7 @@ function ProjectForm({ project }) {
 
 
                 {/* Cover Image */}
-                <div className="rounded-lg border border-indigo-100 bg-white p-4">
+                <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
                     <Input
                         label="Cover Image"
                         type="file"
@@ -155,37 +157,40 @@ function ProjectForm({ project }) {
 
 
                 {/* Status */}
-                {project && <div className="rounded-lg border border-indigo-100 bg-white p-4">
-                    <Select
-                        label="Status"
-                        options={["ACTIVE", "ARCHIVED", "COMPLETED"]}
-                        {...register("status")}
-                    />
-                </div>}
+                {project && (
+                    <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+                        <Select
+                            label="Status"
+                            options={["ACTIVE", "ARCHIVED", "COMPLETED"]}
+                            {...register("status")}
+                        />
+                    </div>
+                )}
 
             </div>
 
 
             {/* Footer / Action */}
-            <div className="flex justify-end border-t border-indigo-100 bg-white px-6 py-4">
+            <div className="flex justify-end border-t border-slate-200 bg-white px-6 py-4 dark:border-slate-800 dark:bg-slate-900">
                 <Button
                     disabled={isPending}
                     type="submit"
-                    className={`min-w-36 rounded-md px-5 py-2.5 font-medium text-white transition
-        ${isPending
-                            ? "bg-indigo-800 cursor-not-allowed"
+                    className={`min-w-36 rounded-md px-5 py-2.5 font-medium text-white transition focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900 ${isPending
+                            ? "cursor-not-allowed bg-indigo-800 dark:bg-indigo-950"
                             : "bg-indigo-600 hover:bg-indigo-700"
                         }`}
                 >
-                    {
-                        isPending ? (project ? "Updating" : "Creating") :
-                            (project ? "Update Project" : "Create Project")
+                    {isPending
+                        ? (project ? "Updating" : "Creating")
+                        : (project ? "Update Project" : "Create Project")
                     }
                 </Button>
             </div>
 
         </form>
-    )
+    );
+
+
 }
 
 

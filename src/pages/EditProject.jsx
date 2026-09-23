@@ -21,8 +21,7 @@ function EditProject() {
     }
 
     return (
-
-        <ProjectForm project={projectQuery.data?.data} />
+        <main className="min-h-screen bg-slate-100 px-4 py-8 dark:bg-slate-950"> <ProjectForm project={projectQuery.data?.data} /> </main>
     )
 
 }
