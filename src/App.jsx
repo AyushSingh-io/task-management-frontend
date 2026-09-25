@@ -5,6 +5,7 @@ import { login, logout } from "./store/authSlice.js"
 import { Header, Footer } from "./components/index.js"
 import { Outlet } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
+import { Toaster } from 'sonner';
 
 
 
@@ -48,6 +49,12 @@ function App() {
         <Outlet />
       </main>
       <Footer />
+
+      <Toaster
+      richColors 
+      closeButton
+      theme={theme}
+      />
 
     </>
 }
