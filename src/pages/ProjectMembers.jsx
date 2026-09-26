@@ -214,8 +214,8 @@ function ProjectMembers() {
                                         disabled={isAddingMember}
                                         onClick={addProjectMemberHandler}
                                         className={`rounded-lg px-4 py-2 text-sm font-medium text-white transition ${isAddingMember
-                                                ? "bg-indigo-900 dark:bg-indigo-950"
-                                                : "bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                                            ? "bg-indigo-900 dark:bg-indigo-950"
+                                            : "bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
                                             }`}
                                     >
                                         {isAddingMember
@@ -232,7 +232,7 @@ function ProjectMembers() {
                         {isLoading ? (
                             <Loading />
                         ) : (
-                            <div className="space-y-3">
+                            <div className="max-h-[480px] space-y-3 overflow-y-auto pr-2">
 
                                 {members.map((member) => (
 
@@ -243,8 +243,8 @@ function ProjectMembers() {
                                             setNewRoleOfSelectedMember(member.role);
                                         }}
                                         className={`cursor-pointer rounded-xl border p-4 transition hover:-translate-y-0.5 hover:shadow-sm ${selectedMember?._id === member._id
-                                                ? "border-indigo-300 bg-indigo-50 dark:border-indigo-700 dark:bg-indigo-950/40"
-                                                : "border-slate-200 bg-slate-50 hover:border-indigo-200 hover:bg-indigo-50/50 dark:border-slate-800 dark:bg-slate-800/60 dark:hover:border-indigo-800 dark:hover:bg-indigo-950/30"
+                                            ? "border-indigo-300 bg-indigo-50 dark:border-indigo-700 dark:bg-indigo-950/40"
+                                            : "border-slate-200 bg-slate-50 hover:border-indigo-200 hover:bg-indigo-50/50 dark:border-slate-800 dark:bg-slate-800/60 dark:hover:border-indigo-800 dark:hover:bg-indigo-950/30"
                                             }`}
                                     >
 
@@ -407,8 +407,8 @@ function ProjectMembers() {
                                                     disabled={isChangingRole}
                                                     onClick={changeRoleHandler}
                                                     className={`rounded-lg px-4 py-2.5 text-sm font-medium text-white transition ${isChangingRole
-                                                            ? "bg-indigo-900 dark:bg-indigo-950"
-                                                            : "bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                                                        ? "bg-indigo-900 dark:bg-indigo-950"
+                                                        : "bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
                                                         }`}
                                                 >
                                                     {isChangingRole
@@ -420,8 +420,8 @@ function ProjectMembers() {
                                                     disabled={isRemovingMember}
                                                     onClick={removeMemberHandler}
                                                     className={`rounded-lg px-4 py-2.5 text-sm font-medium text-white transition ${isRemovingMember
-                                                            ? "bg-red-900 dark:bg-red-950"
-                                                            : "bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
+                                                        ? "bg-red-900 dark:bg-red-950"
+                                                        : "bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
                                                         }`}
                                                 >
                                                     {isRemovingMember

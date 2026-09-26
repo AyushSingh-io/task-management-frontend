@@ -6,13 +6,16 @@ const projectService = {
         body: data   //FormData
     }),
 
-    getProjects: ({page = 1 , limit = 5 , status}) => {
+    getProjects: ({page = 1 , limit = 5 , status , search = ""}) => {
         const params = new URLSearchParams();
         params.append("page" , page);
         params.append("limit", limit)
 
         if(status){
             params.append("status",status)
+        }
+        if(search){
+            params.append("search" , search)
         }
 
         return api(`/projects?${params.toString()}`)

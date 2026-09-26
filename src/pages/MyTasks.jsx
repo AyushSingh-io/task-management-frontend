@@ -9,14 +9,16 @@ function MyTasks() {
     const navigate = useNavigate();
     const [status, setStatus] = useState("");
     const [page, setPage] = useState(1);
+    const [search , setSearch] = useState("");
 
 
     const tasksQuery = useQuery({
-        queryKey: ["myTasks", page, status],
+        queryKey: ["myTasks", page, status , search],
         queryFn: () => taskService.getAssignedTasks({
             page,
             limit: 6,
             status: status === "ALL" ? undefined : status,
+            search
         })
     })
 
@@ -26,7 +28,7 @@ function MyTasks() {
     const error = tasksQuery.error;
     const totalPages = tasksQuery.data?.data.totalPages || 0;
 
-
+    console.log(tasks)
     return (
         isError ?
             <ErrorMessage message={error} onRetry={() => tasksQuery.refetch()} />
@@ -57,7 +59,6 @@ function MyTasks() {
                             <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
 
                                 <div>
-
                                     <div className="flex items-center gap-3">
 
                                         <h2 className="text-xl font-bold text-slate-900 dark:text-white">
@@ -73,20 +74,50 @@ function MyTasks() {
                                     <p className="mt-1.5 text-sm text-slate-600 dark:text-slate-400">
                                         Tasks currently assigned to you
                                     </p>
-
                                 </div>
 
+                                {/* Search + Status */}
+                                <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
 
-                                <Select
-                                    value={status}
-                                    onChange={(e) => {
-                                        setStatus(e.target.value)
-                                        setPage(1)
-                                    }}
-                                    className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 shadow-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-emerald-500 dark:focus:ring-emerald-950 sm:w-44"
-                                    options={['ALL', 'TODO', 'IN_PROGRESS', 'DONE']}
-                                >
-                                </Select>
+                                    {/* Search */}
+                                    <div className="relative w-full sm:w-72">
+
+                                        <svg
+                                            className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="m21 21-4.35-4.35m2.35-5.65a8 8 0 1 1-16 0 8 8 0 0 1 16 0z"
+                                            />
+                                        </svg>
+
+                                        <input
+                                            type="text"
+                                            value={search}
+                                            onChange={(e) => setSearch(e.target.value)}
+                                            placeholder="Search tasks..."
+                                            className="w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-800 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-emerald-500 dark:focus:ring-emerald-950"
+                                        />
+
+                                    </div>
+
+                                    {/* Status */}
+                                    <Select
+                                        value={status}
+                                        onChange={(e) => {
+                                            setStatus(e.target.value)
+                                            setPage(1)
+                                        }}
+                                        className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 shadow-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-emerald-500 dark:focus:ring-emerald-950 sm:w-44"
+                                        options={['ALL', 'TODO', 'IN_PROGRESS', 'DONE']}
+                                    />
+
+                                </div>
 
                             </div>
 

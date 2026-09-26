@@ -26,13 +26,12 @@ function TaskCard({ task }) {
 
             {/* Top accent */}
             <div
-                className={`absolute inset-x-0 top-0 h-1 ${
-                    task.priority === "HIGH"
+                className={`absolute inset-x-0 top-0 h-1 ${task.priority === "HIGH"
                         ? "bg-red-500"
                         : task.priority === "MEDIUM"
                             ? "bg-amber-500"
                             : "bg-emerald-500"
-                }`}
+                    }`}
             />
 
             <div className="flex flex-1 flex-col p-5 sm:p-6">
@@ -41,8 +40,8 @@ function TaskCard({ task }) {
                 <div className="flex items-start justify-between gap-4">
 
                     <div className="min-w-0 flex-1">
-                        <h3 className="line-clamp-2 text-lg font-bold leading-6 text-slate-900 transition-colors group-hover:text-emerald-600 dark:text-white dark:group-hover:text-emerald-400">
-                            {task.title}
+                        <h3 className="line-clamp-2 text-lg font-bold leading-6 text-slate-900 transition-colors  dark:text-white ">
+                            {task.name}
                         </h3>
 
                         <div className="mt-2 flex items-center gap-1.5">
@@ -68,10 +67,9 @@ function TaskCard({ task }) {
 
                     {/* Priority */}
                     <span
-                        className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${
-                            priorityStyles[task.priority] ||
+                        className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${priorityStyles[task.priority] ||
                             "bg-slate-100 text-slate-700 ring-1 ring-inset ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700"
-                        }`}
+                            }`}
                     >
                         {task.priority}
                     </span>
@@ -101,10 +99,9 @@ function TaskCard({ task }) {
                         </p>
 
                         <span
-                            className={`mt-2 inline-block rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${
-                                statusStyles[task.status] ||
+                            className={`mt-2 inline-block rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${statusStyles[task.status] ||
                                 "bg-slate-100 text-slate-700 ring-1 ring-inset ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700"
-                            }`}
+                                }`}
                         >
                             {task.status}
                         </span>
